@@ -62,7 +62,7 @@ button,input{font-family:inherit;font-size:inherit;color:inherit}
 /* ---------- Sheet ---------- */
 .sheet{overflow:hidden;display:flex;flex-direction:column}
 .sheet-scroll{overflow:auto;max-height:calc(100vh - 330px);min-height:360px}
-.grid{--cols:40px minmax(160px,1.7fr) minmax(70px,.7fr) minmax(84px,.8fr) minmax(76px,.7fr) minmax(78px,.7fr) minmax(112px,1.05fr) minmax(90px,.85fr) minmax(112px,1fr) minmax(128px,1.15fr) 44px;min-width:1030px}
+.grid{--cols:40px minmax(160px,1.7fr) minmax(70px,.7fr) minmax(84px,.8fr) minmax(72px,.65fr) minmax(76px,.7fr) minmax(78px,.7fr) minmax(112px,1.05fr) minmax(90px,.85fr) minmax(112px,1fr) minmax(128px,1.15fr) 44px;min-width:1100px}
 .r{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--line-2);min-height:44px;align-items:stretch}
 .r > .c{display:flex;align-items:center;padding:0 10px;min-width:0}
 .c.idx{justify-content:center;color:var(--faint);font-size:12px;background:var(--head);border-right:1px solid var(--line-2);position:sticky;left:0;z-index:2}
@@ -192,12 +192,12 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .sheet-scroll{max-height:none;overflow:visible;min-height:0}
   .grid{min-width:0}
   .head,.foot{display:none}
-  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-areas:"idx name name name name name name fin fin fin fin act" "pcs pcs pcs pcs kg kg kg kg rate rate rate rate" "avg avg avg basic basic basic samiti samiti samiti labour labour labour" "meta meta meta meta meta meta meta meta meta meta meta meta";gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px;margin-bottom:8px;min-height:0;position:relative;align-items:center}
+  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-areas:"idx name name name name name name fin fin fin fin act" "pcs pcs pcs kg kg kg jaal jaal jaal rate rate rate" "avg avg avg basic basic basic samiti samiti samiti labour labour labour" "meta meta meta meta meta meta meta meta meta meta meta meta";gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px;margin-bottom:8px;min-height:0;position:relative;align-items:center}
   .body .r.sel{border-color:var(--green-line)}
   .r > .c{padding:0;background:transparent !important;border:0 !important;position:static;min-width:0}
   .c.idx{display:flex !important;grid-area:idx;width:28px;height:28px;border-radius:50%;background:var(--green) !important;color:#fff !important;font-size:13px;font-weight:700;justify-content:center;align-items:center;position:static}
   .c.name{grid-area:name}
-  .c.pcs{grid-area:pcs}.c.kg{grid-area:kg}.c.rate{grid-area:rate}
+  .c.pcs{grid-area:pcs}.c.kg{grid-area:kg}.c.jaal{grid-area:jaal}.c.rate{grid-area:rate}
   .c.avg{grid-area:avg}.c.basic{grid-area:basic}.c.samiti{grid-area:samiti}.c.labour{grid-area:labour}
   .c.fin{grid-area:fin;justify-content:flex-end;font-size:18px;font-weight:800}
   .c.act{grid-area:act;justify-content:flex-end}
@@ -244,7 +244,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .main{display:block}
   .card{box-shadow:none;border-color:#ccc}
   .sheet-scroll{max-height:none;overflow:visible}
-  .grid{--cols:28px 2.1fr .6fr .8fr .7fr .7fr 1.05fr .85fr .9fr 1.1fr;min-width:0}
+  .grid{--cols:28px 2fr .6fr .75fr .6fr .65fr .65fr 1.05fr .85fr .9fr 1.1fr;min-width:0}
   .r{min-height:24px;break-inside:avoid}
   .r.blank,.r.hidden{display:none !important}
   .head,.foot{position:static}
@@ -274,7 +274,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 .fld input.n{text-align:right}
 .fld input:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(22,163,74,.15)}
 .fld input.err{border-color:var(--red);background:#FEF2F2}
-.fld3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fld3{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .s-err{color:var(--red);font-size:13px;min-height:18px;margin:0 0 8px}
 .s-acts{display:flex;flex-wrap:wrap;gap:8px}
 .s-out .rc{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:14px}
@@ -288,7 +288,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 @media (max-width:767px){
   .modes{display:flex;width:100%}.mode{flex:1;padding:0 8px}
   .single{grid-template-columns:1fr}
-  .fld3{grid-template-columns:1fr 1fr}.fld3 .fld:first-child{grid-column:1/-1}
+  .fld3{grid-template-columns:1fr 1fr}
   .s-acts .btn{flex:1;min-height:44px;justify-content:center}
 }
 @media print{
@@ -299,6 +299,8 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 }
 
 .c.avg .v{color:var(--ink-2)}
+
+#defaultJaal{width:56px}
 </style>
 </head>
 <body>
@@ -329,6 +331,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       <div class="fld3">
         <label class="fld"><span>Pieces</span><input id="sPieces" class="n" inputmode="numeric" placeholder="0"></label>
         <label class="fld"><span>Total KG</span><input id="sKgIn" class="n" inputmode="decimal" placeholder="0.000"></label>
+        <label class="fld"><span>Jaal KG <em>(minus)</em></span><input id="sJaal" class="n" inputmode="decimal" placeholder="0"></label>
         <label class="fld"><span>Rate / KG (₹)</span><input id="sRate" class="n" inputmode="decimal" placeholder="90"></label>
       </div>
       <p class="s-err" id="sErr"></p>
@@ -344,6 +347,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr">Search customer</span><input id="search" type="search" placeholder="Search customer…" autocomplete="off"></label>
     <div class="pills">
       <span class="pill" title="Applies to every row; a rate you change in a row stays as you set it">Default rate ₹<input id="defaultRate" class="n" inputmode="decimal" aria-label="Default rate per kg, applies to all rows">/kg <small style="color:var(--faint)">· sab rows mein</small></span>
+      <span class="pill" title="Jaal (crate) weight is subtracted from Total KG in every row; a jaal you change in a row stays as you set it">Default jaal<input id="defaultJaal" class="n" inputmode="decimal" placeholder="0" aria-label="Default jaal weight in kg, applies to all rows">kg <small style="color:var(--faint)">· sab rows mein</small></span>
       <span class="pill">Samiti <b>1%</b> (rounded down)</span>
       <span class="pill">Labour <b>₹0.625</b>/pc</span>
     </div>
@@ -365,6 +369,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
             <div class="c name">Customer Name <span class="tag in">Input</span></div>
             <div class="c r-al">Pieces <span class="tag in">Input</span></div>
             <div class="c r-al">Total KG <span class="tag in">Input</span></div>
+            <div class="c r-al">Jaal KG <span class="tag in">Minus</span></div>
             <div class="c auto r-al">Average <span class="tag au">kg / pc</span></div>
             <div class="c r-al">Rate / KG <span class="tag in">Input</span></div>
             <div class="c auto r-al">Basic Amount <span class="tag au">ƒx Auto</span></div>
@@ -379,6 +384,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
             <div class="c name">TOTAL</div>
             <div class="c inp"><span class="v" id="fPcs">0</span></div>
             <div class="c inp"><span class="v" id="fKg">0</span></div>
+            <div class="c inp"><span class="v" id="fJaal">0</span></div>
             <div class="c auto"><span class="v" id="fAvg">—</span></div>
             <div class="c inp"><span class="v dash">—</span></div>
             <div class="c auto"><span class="v" id="fBasic">₹0</span></div>
@@ -466,17 +472,22 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     var pieces = piecesRaw === '' ? null : (/^\d+$/.test(piecesRaw) ? parseInt(piecesRaw, 10) : NaN);
     var grams = parseScaled(row.kg, 3);
     var ratePaise = parseScaled(row.rate, 2);
+    var jaalRaw = parseScaled(row.jaal, 3);
+    var jaalGrams = jaalRaw === null ? 0 : jaalRaw;
 
     if (pieces !== null && (isNaN(pieces) || pieces < 0 || pieces > 1000000)) errors.pieces = 'Whole number of pieces, 0 or more';
     if (grams !== null && (isNaN(grams) || grams <= 0)) errors.kg = 'Weight must be more than 0 (max 3 decimals)';
     if (ratePaise !== null && (isNaN(ratePaise) || ratePaise <= 0)) errors.rate = 'Rate must be more than 0 (max 2 decimals)';
+    if (isNaN(jaalGrams) || jaalGrams < 0) errors.jaal = 'Jaal weight must be 0 or more (max 3 decimals)';
+    else if (grams > 0 && jaalGrams >= grams) errors.jaal = 'Jaal weight must be less than Total KG';
 
     var isEmpty = !name && pieces === null && grams === null && ratePaise === null;
     var hasErrors = Object.keys(errors).length > 0;
     var complete = !!name && pieces !== null && grams !== null && ratePaise !== null;
 
     var status = isEmpty ? 'empty' : hasErrors ? 'invalid' : complete ? 'valid' : 'incomplete';
-    return { ok: status === 'valid', status: status, errors: errors, pieces: pieces, grams: grams, ratePaise: ratePaise };
+    var netGrams = (grams > 0 && !errors.jaal) ? grams - jaalGrams : null;
+    return { ok: status === 'valid', status: status, errors: errors, pieces: pieces, grams: grams, jaalGrams: isNaN(jaalGrams) ? 0 : jaalGrams, netGrams: netGrams, ratePaise: ratePaise };
   }
 
   /** Core formula. Inputs are already-validated integers. Returns all figures in paise. */
@@ -518,19 +529,21 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   function computeRow(row) {
     var v = validateRow(row);
     if (!v.ok) return { status: v.status, errors: v.errors, result: null };
-    var r = calculate(v.pieces, v.grams, v.ratePaise);
-    return { status: r.warning ? 'warning' : 'valid', errors: v.errors, result: r, pieces: v.pieces, grams: v.grams, ratePaise: v.ratePaise };
+    var r = calculate(v.pieces, v.netGrams, v.ratePaise);
+    return { status: r.warning ? 'warning' : 'valid', errors: v.errors, result: r, pieces: v.pieces, grams: v.grams, jaalGrams: v.jaalGrams, netGrams: v.netGrams, ratePaise: v.ratePaise };
   }
 
   /** Grand totals from all valid rows. Grand total = sum of row finals, always. */
   function computeTotals(rows) {
-    var t = { customers: 0, pieces: 0, grams: 0, basic: 0, samiti: 0, labour: 0, grand: 0, incomplete: 0, invalid: 0 };
+    var t = { customers: 0, pieces: 0, grams: 0, jaal: 0, net: 0, basic: 0, samiti: 0, labour: 0, grand: 0, incomplete: 0, invalid: 0 };
     rows.forEach(function (row) {
       var c = computeRow(row);
       if (c.status === 'valid') {
         t.customers += 1;
         t.pieces += c.pieces;
         t.grams += c.grams;
+        t.jaal += c.jaalGrams;
+        t.net += c.netGrams;
         t.basic += c.result.basic;
         t.samiti += c.result.samiti;
         t.labour += c.result.labourAdjusted;
@@ -617,7 +630,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   var C = window.BillingCalc;
   var STORE_KEY = 'chickenBilling.v1';
   var MAX_ROWS = 500;
-  var FIELDS = ['name', 'pieces', 'kg', 'rate'];
+  var FIELDS = ['name', 'pieces', 'kg', 'jaal', 'rate'];
 
   var SAMPLE = [
     ['Customer 01', 50, 193, 90], ['Sharma Chicken Centre', 120, 462, 92], ['Al-Noor Meat Shop', 80, 310, 90],
@@ -627,9 +640,9 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
   var $ = function (id) { return document.getElementById(id); };
   var uid = function () { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
-  var newRow = function (o) { o = o || {}; return { id: uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '', customRate: !!o.customRate }; };
+  var newRow = function (o) { o = o || {}; return { id: uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '', customRate: !!o.customRate, jaal: o.jaal != null ? String(o.jaal) : '', customJaal: !!o.customJaal }; };
 
-  var state = { rows: [], defaultRate: '90', sheetNo: 1, selectedId: null };
+  var state = { rows: [], defaultRate: '90', defaultJaal: '', sheetNo: 1, selectedId: null };
 
   // ---------- Persistence (local only, never sent anywhere) ----------
   var storage = (function () {
@@ -647,7 +660,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     $('saveText').textContent = 'Saving…';
     saveTimer = setTimeout(function () {
       try {
-        storage.setItem(STORE_KEY, JSON.stringify({ rows: state.rows, defaultRate: state.defaultRate, sheetNo: state.sheetNo, savedAt: new Date().toISOString() }));
+        storage.setItem(STORE_KEY, JSON.stringify({ rows: state.rows, defaultRate: state.defaultRate, defaultJaal: state.defaultJaal, sheetNo: state.sheetNo, savedAt: new Date().toISOString() }));
         $('saveText').textContent = 'Saved on this device';
       } catch (e) { $('saveText').textContent = 'Not saved (storage full)'; $('saveState').classList.add('off'); }
     }, 250);
@@ -664,6 +677,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       '<div class="c name">' + inp('name', 'name-in', 'Enter customer name', 'text') + '<span class="status" hidden></span></div>' +
       '<div class="c inp pcs"><span class="m-lbl">Pieces</span>' + inp('pieces', 'n', 'Pieces', 'numeric') + '</div>' +
       '<div class="c inp kg"><span class="m-lbl">Total KG</span>' + inp('kg', 'n', 'KG', 'decimal') + '</div>' +
+      '<div class="c inp jaal"><span class="m-lbl">Jaal KG</span>' + inp('jaal', 'n', 'Jaal', 'decimal') + '</div>' +
       '<div class="c auto avg"><span class="m-lbl">Average</span><span class="v" data-o="avg"></span></div>' +
       '<div class="c inp rate"><span class="m-lbl">Rate / KG</span>' + inp('rate', 'n', 'Rate', 'decimal') + '</div>' +
       '<div class="c auto basic"><span class="m-lbl">Basic</span><span class="v" data-o="basic"></span></div>' +
@@ -701,14 +715,14 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     var el = rowEl(row.id); if (!el) return;
     var c = C.computeRow(row);
     var out = function (k) { return el.querySelector('[data-o="' + k + '"]'); };
-    ['pieces', 'kg', 'rate'].forEach(function (f) {
+    ['pieces', 'kg', 'jaal', 'rate'].forEach(function (f) {
       var i = el.querySelector('[data-f="' + f + '"]');
       i.classList.toggle('err', !!c.errors[f]);
       i.title = c.errors[f] || '';
     });
     var st = el.querySelector('.status');
     el.classList.toggle('blank', c.status === 'empty');
-    var vv = C.validateRow(row), av = C.averageKg(vv.grams, vv.pieces);
+    var vv = C.validateRow(row), av = C.averageKg(vv.netGrams, vv.pieces);
     setV(out('avg'), av ? av + ' kg' : '—', !av);
     if (c.result && c.status === 'valid') {
       var r = c.result;
@@ -746,7 +760,8 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       tLabour: C.formatINR(t.labour), sLabour: C.formatINR(t.labour), fLabour: C.formatINR(t.labour),
       tGrand: C.formatINR(t.grand), sGrand: C.formatINR(t.grand), mGrand: C.formatINR(t.grand), fFinal: C.formatINR(t.grand)
     };
-    var tav = C.averageKg(t.grams, t.pieces) || '—';
+    var tav = C.averageKg(t.net, t.pieces) || '—';
+    map.fJaal = C.formatKg(t.jaal);
     map.tAvg = tav; map.sAvg = tav; map.fAvg = tav === '—' ? '—' : tav + ' kg';
     Object.keys(map).forEach(function (k) { $(k).textContent = map[k]; });
     $('tWords').textContent = $('sWords').textContent = C.amountInWords(t.grand);
@@ -774,8 +789,8 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       p.innerHTML = h; return;
     }
     var r = c.result;
-    var kg = C.formatKg(c.grams), rate = C.formatINR(c.ratePaise);
-    h += rc('Pieces', C.formatInt(c.pieces)) + rc('Total Weight', kg + ' kg') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(c.pieces) + ' pcs</small>', C.averageKg(c.grams, c.pieces) + ' kg / pc') + rc('Rate', rate + ' / kg') +
+    var gkg = C.formatKg(c.grams), kg = C.formatKg(c.netGrams), rate = C.formatINR(c.ratePaise);
+    h += rc('Pieces', C.formatInt(c.pieces)) + rc('Total Weight', gkg + ' kg') + (c.jaalGrams ? rc('Jaal Weight', '− ' + C.formatKg(c.jaalGrams) + ' kg') + rc('Net Weight<small>' + gkg + ' − ' + C.formatKg(c.jaalGrams) + '</small>', kg + ' kg') : '') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(c.pieces) + ' pcs</small>', C.averageKg(c.netGrams, c.pieces) + ' kg / pc') + rc('Rate', rate + ' / kg') +
       rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
       rc('Original Labour<small>' + C.formatInt(c.pieces) + ' × ₹0.625</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
@@ -796,7 +811,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     n = Math.min(n, room);
     var body = $('body'), first = null;
     for (var i = 0; i < n; i++) {
-      var r = newRow({ rate: state.defaultRate });
+      var r = newRow({ rate: state.defaultRate, jaal: state.defaultJaal });
       state.rows.push(r);
       var el = buildRow(r); body.appendChild(el); updateRow(r);
       if (!first) first = el;
@@ -824,16 +839,16 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
   // ---------- Export ----------
   function exportRows() {
-    var head = ['S.No', 'Customer Name', 'Pieces', 'Total KG', 'Average KG / Piece', 'Rate / KG', 'Basic Amount', 'Samiti Charge', 'Original Labour', 'Labour Adjustment', 'Labour Charge', 'Final Amount'];
+    var head = ['S.No', 'Customer Name', 'Pieces', 'Total KG', 'Jaal KG', 'Net KG', 'Average KG / Piece', 'Rate / KG', 'Basic Amount', 'Samiti Charge', 'Original Labour', 'Labour Adjustment', 'Labour Charge', 'Final Amount'];
     var rows = [], n = 0;
     state.rows.forEach(function (row) {
       var c = C.computeRow(row);
       if (c.status !== 'valid') return;
       var r = c.result;
-      rows.push([++n, row.name.trim(), c.pieces, C.formatKg(c.grams).replace(/,/g, ''), C.averageKg(c.grams, c.pieces) || '', C.paiseToPlain(c.ratePaise), C.paiseToPlain(r.basic), C.paiseToPlain(r.samiti), C.paiseToPlain(r.labourOriginal), C.paiseToPlain(r.adjustment), C.paiseToPlain(r.labourAdjusted), C.paiseToPlain(r.final)]);
+      rows.push([++n, row.name.trim(), c.pieces, C.formatKg(c.grams).replace(/,/g, ''), C.formatKg(c.jaalGrams).replace(/,/g, ''), C.formatKg(c.netGrams).replace(/,/g, ''), C.averageKg(c.netGrams, c.pieces) || '', C.paiseToPlain(c.ratePaise), C.paiseToPlain(r.basic), C.paiseToPlain(r.samiti), C.paiseToPlain(r.labourOriginal), C.paiseToPlain(r.adjustment), C.paiseToPlain(r.labourAdjusted), C.paiseToPlain(r.final)]);
     });
     var t = C.computeTotals(state.rows);
-    var total = ['', 'TOTAL', t.pieces, C.formatKg(t.grams).replace(/,/g, ''), C.averageKg(t.grams, t.pieces) || '', '', C.paiseToPlain(t.basic), C.paiseToPlain(t.samiti), '', '', C.paiseToPlain(t.labour), C.paiseToPlain(t.grand)];
+    var total = ['', 'TOTAL', t.pieces, C.formatKg(t.grams).replace(/,/g, ''), C.formatKg(t.jaal).replace(/,/g, ''), C.formatKg(t.net).replace(/,/g, ''), C.averageKg(t.net, t.pieces) || '', '', C.paiseToPlain(t.basic), C.paiseToPlain(t.samiti), '', '', C.paiseToPlain(t.labour), C.paiseToPlain(t.grand)];
     return { head: head, rows: rows, total: total, count: n };
   }
   function fileStamp() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
@@ -860,9 +875,9 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       if (v === '' || v == null) return '<Cell' + (style ? ' ss:StyleID="' + style + '"' : '') + '/>';
       return '<Cell' + (style ? ' ss:StyleID="' + style + '"' : '') + '><Data ss:Type="' + (num ? 'Number' : 'String') + '">' + x(v) + '</Data></Cell>';
     };
-    var money = [5, 6, 7, 8, 9, 10, 11];
+    var money = [7, 8, 9, 10, 11, 12, 13];
     var body = d.rows.map(function (r) {
-      return '<Row>' + r.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? (i === 11 ? 'fin' : 'money') : (i === 3 || i === 4 ? 'kg' : null), i !== 1); }).join('') + '</Row>';
+      return '<Row>' + r.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? (i === 13 ? 'fin' : 'money') : (i >= 3 && i <= 6 ? 'kg' : null), i !== 1); }).join('') + '</Row>';
     }).join('');
     var tot = '<Row>' + d.total.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? 'totm' : 'tot', i > 1 && v !== ''); }).join('') + '</Row>';
     var xml = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>' +
@@ -910,6 +925,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       var row = state.rows.filter(function (r) { return r.id === id; })[0]; if (!row) return;
       row[f] = e.target.value;
       if (f === 'rate') row.customRate = row.rate.trim() !== '' && row.rate.trim() !== state.defaultRate;
+      if (f === 'jaal') row.customJaal = row.jaal.trim() !== state.defaultJaal;
       updateRow(row); updateTotals();
       if (state.selectedId === id || !state.selectedId) { state.selectedId = id; renderPreview(); }
       if (f === 'name') applySearch();
@@ -957,25 +973,42 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
         save();
       }
     });
+    var dj = $('defaultJaal');
+    dj.addEventListener('input', function () {
+      var raw = dj.value.trim(), v = raw === '' ? 0 : C.parseScaled(raw, 3);
+      dj.classList.toggle('err', !(v >= 0));
+      if (!(v >= 0)) return;
+      state.defaultJaal = raw;
+      state.rows.forEach(function (r) {
+        if (r.customJaal) return;
+        r.jaal = state.defaultJaal;
+        var el = rowEl(r.id), inp = el && el.querySelector('[data-f="jaal"]');
+        if (inp && inp !== document.activeElement) inp.value = r.jaal;
+        updateRow(r);
+      });
+      updateTotals(); renderPreview();
+      if (!singleCustomJaal) { $('sJaal').value = state.defaultJaal; renderSingle(); saveSingle(); }
+      save();
+    });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('dlg').classList.remove('show'); closeSummary(); } });
     window.addEventListener('beforeprint', function () { $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); });
   }
 
   // ---------- Single customer calculator ----------
   var SINGLE_KEY = 'chickenBilling.single.v1';
-  var singleCustomRate = false;
-  var sF = { name: 'sName', pieces: 'sPieces', kg: 'sKgIn', rate: 'sRate' };
-  function singleRow() { return { name: $('sName').value || 'x', pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value }; }
+  var singleCustomRate = false, singleCustomJaal = false;
+  var sF = { name: 'sName', pieces: 'sPieces', kg: 'sKgIn', jaal: 'sJaal', rate: 'sRate' };
+  function singleRow() { return { name: $('sName').value || 'x', pieces: $('sPieces').value, kg: $('sKgIn').value, jaal: $('sJaal').value, rate: $('sRate').value }; }
   function renderSingle() {
     var row = singleRow(), v = C.validateRow(row), out = $('sOut');
-    ['pieces', 'kg', 'rate'].forEach(function (f) { $(sF[f]).classList.toggle('err', !!v.errors[f]); });
+    ['pieces', 'kg', 'jaal', 'rate'].forEach(function (f) { $(sF[f]).classList.toggle('err', !!v.errors[f]); });
     $('sErr').textContent = Object.values(v.errors).join(' · ');
     var nm = $('sName').value.trim();
     var h = '<h3>Bill' + (nm ? ' · ' + esc(nm) : '') + '</h3>';
     if (!v.ok) { out.innerHTML = h + '<p class="empty">Pieces, total KG and rate bharte hi bill yahan dikhega.</p>'; return; }
-    var r = C.calculate(v.pieces, v.grams, v.ratePaise);
-    var kg = C.formatKg(v.grams), rate = C.formatINR(v.ratePaise);
-    h += rc('Pieces', C.formatInt(v.pieces)) + rc('Total Weight', kg + ' kg') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(v.pieces) + ' pcs</small>', (C.averageKg(v.grams, v.pieces) || '—') + ' kg / pc') + rc('Rate', rate + ' / kg') +
+    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise);
+    var gkg = C.formatKg(v.grams), kg = C.formatKg(v.netGrams), rate = C.formatINR(v.ratePaise);
+    h += rc('Pieces', C.formatInt(v.pieces)) + rc('Total Weight', gkg + ' kg') + (v.jaalGrams ? rc('Jaal Weight', '− ' + C.formatKg(v.jaalGrams) + ' kg') + rc('Net Weight<small>' + gkg + ' − ' + C.formatKg(v.jaalGrams) + '</small>', kg + ' kg') : '') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(v.pieces) + ' pcs</small>', (C.averageKg(v.netGrams, v.pieces) || '—') + ' kg / pc') + rc('Rate', rate + ' / kg') +
       rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
       rc('Original Labour<small>' + C.formatInt(v.pieces) + ' × ₹0.625</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
@@ -988,7 +1021,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   }
   function saveSingle() {
     if (!storage) return;
-    try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate })); } catch (e) {}
+    try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate, jaal: $('sJaal').value, customJaal: singleCustomJaal })); } catch (e) {}
   }
   function setMode(m) {
     document.body.classList.toggle('mode-single', m === 'single');
@@ -1001,17 +1034,20 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     $('sName').value = s ? s.name || '' : ''; $('sPieces').value = s ? s.pieces || '' : '';
     $('sKgIn').value = s ? s.kg || '' : ''; $('sRate').value = s ? s.rate || state.defaultRate : state.defaultRate;
     singleCustomRate = !!(s && s.customRate);
-    Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { if (f === 'rate') singleCustomRate = $('sRate').value.trim() !== state.defaultRate; renderSingle(); saveSingle(); }); });
-    $('sClear').onclick = function () { $('sName').value = ''; $('sPieces').value = ''; $('sKgIn').value = ''; $('sRate').value = state.defaultRate; singleCustomRate = false; renderSingle(); saveSingle(); $('sPieces').focus(); };
+    singleCustomJaal = !!(s && s.customJaal);
+    $('sJaal').value = s && s.jaal != null ? s.jaal : state.defaultJaal;
+    Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { if (f === 'rate') singleCustomRate = $('sRate').value.trim() !== state.defaultRate; if (f === 'jaal') singleCustomJaal = $('sJaal').value.trim() !== state.defaultJaal; renderSingle(); saveSingle(); }); });
+    $('sClear').onclick = function () { $('sName').value = ''; $('sPieces').value = ''; $('sKgIn').value = ''; $('sRate').value = state.defaultRate; singleCustomRate = false; $('sJaal').value = state.defaultJaal; singleCustomJaal = false; renderSingle(); saveSingle(); $('sPieces').focus(); };
     $('sPrint').onclick = function () { window.print(); };
     $('sToSheet').onclick = function () {
       var v = C.validateRow(singleRow());
       if (!v.ok) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
       if (state.rows.length >= MAX_ROWS) { toast('Maximum of ' + MAX_ROWS + ' rows per bill reached'); return; }
-      var data = { name: $('sName').value.trim() || 'Customer', pieces: $('sPieces').value.trim(), kg: $('sKgIn').value.trim(), rate: $('sRate').value.trim() };
+      var data = { name: $('sName').value.trim() || 'Customer', pieces: $('sPieces').value.trim(), kg: $('sKgIn').value.trim(), jaal: $('sJaal').value.trim(), rate: $('sRate').value.trim() };
       data.customRate = data.rate !== state.defaultRate;
+      data.customJaal = data.jaal !== state.defaultJaal;
       var blank = state.rows.filter(function (r) { return !r.name.trim() && !r.pieces && !r.kg; })[0];
-      if (blank) { FIELDS.forEach(function (f) { blank[f] = data[f]; }); blank.customRate = data.customRate; } else { state.rows.push(newRow(data)); }
+      if (blank) { FIELDS.forEach(function (f) { blank[f] = data[f]; }); blank.customRate = data.customRate; blank.customJaal = data.customJaal; } else { state.rows.push(newRow(data)); }
       renderAll(); save(); toast('Added ' + data.name + ' to the multiple sheet');
     };
     $('tabSingle').onclick = function () { setMode('single'); };
@@ -1028,6 +1064,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     if (saved) {
       state.rows = saved.rows.map(function (r) { return newRow(r); });
       state.defaultRate = saved.defaultRate || '90';
+      state.defaultJaal = saved.defaultJaal || '';
       state.sheetNo = saved.sheetNo || 1;
     } else {
       state.rows = SAMPLE.map(function (s) { return newRow({ name: s[0], pieces: s[1], kg: s[2], rate: s[3] }); });
@@ -1035,6 +1072,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     }
     if (!storage) { $('storageNotice').classList.add('show'); $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved (preview)'; }
     $('defaultRate').value = state.defaultRate;
+    $('defaultJaal').value = state.defaultJaal;
     $('sheetNo').textContent = '#' + state.sheetNo;
     state.selectedId = state.rows[0] && state.rows[0].id;
     bind(); renderAll(); initSingle();
