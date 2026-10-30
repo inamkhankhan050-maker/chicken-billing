@@ -1272,10 +1272,10 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     if (!m) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
     var cv = receiptCanvas(m), blob = jpegPdf(cv.toDataURL('image/jpeg', 0.92), cv.width, cv.height);
     var fname = ('Bill ' + m.name + ' ' + m.date).replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-') + '.pdf';
-    var msg = (m.firm ? m.firm + ' · ' : '') + 'Ghazipur Murga Mandi\n' + m.name + ' · ' + m.date + '\nAaj ka Bill: ' + m.billText + (m.balText ? '\nBalance Baaki: ' + m.balText : '');
+    var msg = 'Bill · ' + m.date;
     var file = null; try { file = new File([blob], fname, { type: 'application/pdf' }); } catch (e) {}
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-      navigator.share({ files: [file], title: fname, text: msg }).catch(function (e) { if (e && e.name !== 'AbortError') fallback(); });
+      navigator.share({ files: [file], text: msg }).catch(function (e) { if (e && e.name !== 'AbortError') fallback(); });
       return;
     }
     fallback();
