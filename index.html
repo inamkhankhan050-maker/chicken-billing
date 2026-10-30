@@ -350,6 +350,48 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
 .btn.wa{background:#25D366;border-color:#1EB457;color:#fff}.btn.wa:hover{background:#1EB457}
 .s-acts{flex-wrap:wrap}
+
+/* ---------- Kharcha / Expense ---------- */
+.exp{display:none;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:12px;align-items:start;max-width:1200px}
+body.mode-exp .exp{display:grid}
+body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none !important}
+.e-in,.e-out{padding:18px}
+.e-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.e-hd h3,.e-out h3{margin:0;font-size:16px}
+.e-date{height:38px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font:inherit}
+.e-quick{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
+.e-quick span{font-size:13px;color:var(--muted)}
+.e-r{display:grid;grid-template-columns:32px minmax(130px,1.1fr) minmax(140px,1.6fr) minmax(100px,.8fr) minmax(90px,.6fr) 34px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line-2)}
+.e-h{font-size:11px;font-weight:650;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-2);border-bottom:1px solid var(--line)}
+.e-h em{font-style:normal;text-transform:none;color:var(--faint);font-weight:400}
+.e-r .ra{text-align:right}
+.e-r input,.e-r select{height:40px;border:1px solid var(--line);border-radius:8px;padding:0 10px;font-size:15px;background:#fff;width:100%;outline:none;font-family:inherit}
+.e-r input.n{text-align:right;font-variant-numeric:tabular-nums}
+.e-r input:focus,.e-r select:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
+.e-r input.err{border-color:var(--red);background:#FEF2F2}
+.e-r .ix{color:var(--muted);font-size:13px;text-align:center}
+.e-empty{color:var(--muted);padding:18px 0;font-size:14px}
+.e-acts{margin-top:14px}
+.e-out .rc{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:14px}
+.e-out .rc .val{font-weight:600;font-variant-numeric:tabular-nums}
+.e-out .rc small{color:var(--faint)}
+.e-out .big{border-bottom:0;padding-top:14px}
+.e-out .big .k{font-weight:700;font-size:15px}
+.e-out .big .val{font-size:28px;color:#B91C1C;font-weight:800}
+.e-out .words{color:var(--muted);font-size:13px;text-align:right}
+@media (max-width:767px){
+  .exp{grid-template-columns:1fr}
+  .e-h{display:none}
+  .e-r{grid-template-columns:28px 1fr 1fr 34px;row-gap:6px}
+  .e-r .ix{grid-row:1;grid-column:1}
+  .e-r .e-type{grid-row:1;grid-column:2 / 4}
+  .e-r .e-del{grid-row:1;grid-column:4}
+  .e-r .e-note{grid-row:2;grid-column:2 / 5}
+  .e-r .e-amt{grid-row:3;grid-column:2}
+  .e-r .e-mode{grid-row:3;grid-column:3 / 5}
+  .e-quick .btn{flex:1 1 40%;justify-content:center}
+}
+.e-del{width:34px;height:34px;padding:0;justify-content:center;color:var(--muted)}.e-del:hover{color:var(--red);border-color:#FCA5A5}
 </style>
 </head>
 <body>
@@ -371,6 +413,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   <nav class="modes" role="tablist" aria-label="Calculator mode">
     <button class="mode" role="tab" id="tabSingle" data-mode="single">Single Customer</button>
     <button class="mode" role="tab" id="tabMulti" data-mode="multi">Multiple Customers</button>
+    <button class="mode" role="tab" id="tabExp" data-mode="exp">Kharcha / Expense</button>
   </nav>
 
   <section class="single" id="singleView" aria-label="Single customer calculator">
@@ -393,6 +436,25 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       <div class="s-acts"><button class="btn danger" id="sClear">Clear</button><button class="btn" id="sPrint">Print / Save PDF</button><button class="btn wa" id="sShare"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button><button class="btn primary" id="sToSheet">Add to Multiple Sheet</button></div>
     </div>
     <div class="card s-out" id="sOut" aria-live="polite"></div>
+  </section>
+
+  <section class="exp" id="expView" aria-label="Daily expenses">
+    <div class="card e-in">
+      <div class="e-hd"><h3>Aaj ka Kharcha</h3><input type="date" id="eDate" class="e-date" aria-label="Kharcha date"></div>
+      <div class="e-quick"><span>Jaldi add karo:</span>
+        <button class="btn" data-q="Truck / Gaadi Bhada">🚚 Truck / Gaadi</button>
+        <button class="btn" data-q="Khana Kharcha">🍲 Khana</button>
+        <button class="btn" data-q="Labour">👷 Labour</button>
+        <button class="btn" data-q="Other">➕ Other</button>
+      </div>
+      <div class="e-tbl">
+        <div class="e-r e-h"><div>#</div><div>Kharcha Type</div><div>Detail <em>(truck no., firm, naam)</em></div><div class="ra">Amount ₹</div><div>Diya</div><div></div></div>
+        <div id="eBody"></div>
+      </div>
+      <div class="e-empty" id="eEmpty">Abhi koi kharcha nahi. Upar button dabakar add karo.</div>
+      <div class="s-acts e-acts"><button class="btn danger" id="eClear">Clear All</button><button class="btn" id="eCsv">Export to Excel</button><button class="btn" id="ePrint">Print / Save PDF</button></div>
+    </div>
+    <div class="card e-out" id="eOut" aria-live="polite"></div>
   </section>
 
   <div id="multiView">
@@ -1072,7 +1134,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     });
     $('btnAdd').onclick = function () { addRows(1, true); };
     $('btnAdd10').onclick = function () { addRows(10, false); };
-    $('btnClear').onclick = function () { confirmDlg(clearAll); };
+    $('btnClear').onclick = function () { $('dlgT').textContent = 'Clear all customers?'; $('dlgP').textContent = "This removes every entry from this bill. It can't be undone."; confirmDlg(clearAll); };
     $('btnCsv').onclick = exportCSV;
     $('btnExcel').onclick = $('mExcel').onclick = exportExcel;
     $('btnPrint').onclick = $('mPrint').onclick = doPrint;
@@ -1293,9 +1355,9 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate, jaal: $('sJaal').value, customJaal: singleCustomJaal, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value })); } catch (e) {}
   }
   function setMode(m) {
-    document.body.classList.toggle('mode-single', m === 'single');
-    $('tabSingle').classList.toggle('on', m === 'single'); $('tabMulti').classList.toggle('on', m !== 'single');
-    $('tabSingle').setAttribute('aria-selected', m === 'single'); $('tabMulti').setAttribute('aria-selected', m !== 'single');
+    if (m !== 'single' && m !== 'exp') m = 'multi';
+    document.body.classList.toggle('mode-single', m === 'single'); document.body.classList.toggle('mode-exp', m === 'exp');
+    [['tabSingle', 'single'], ['tabMulti', 'multi'], ['tabExp', 'exp']].forEach(function (x) { $(x[0]).classList.toggle('on', m === x[1]); $(x[0]).setAttribute('aria-selected', m === x[1]); });
     if (storage) try { storage.setItem('chickenBilling.mode', m); } catch (e) {}
   }
   function initSingle() {
@@ -1334,9 +1396,111 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     };
     $('tabSingle').onclick = function () { setMode('single'); };
     $('tabMulti').onclick = function () { setMode('multi'); };
+    $('tabExp').onclick = function () { setMode('exp'); };
+    initExp();
     var m = null; try { m = storage && storage.getItem('chickenBilling.mode'); } catch (e) {}
     setMode(m || 'single');
     renderSingle();
+  }
+
+
+  // ---------- Kharcha / Expense ----------
+  var EXP_KEY = 'chickenBilling.expenses', EXP_TYPES = ['Truck / Gaadi Bhada', 'Khana Kharcha', 'Labour', 'Other'];
+  var exp = { date: '', items: [], seq: 1 };
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function expDateText() { var p = (exp.date || todayISO()).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  function expAmt(v) { v = String(v == null ? '' : v).replace(/[,₹\s]/g, ''); if (v === '') return { ok: true, p: 0, blank: true }; if (!/^\d+(\.\d{0,2})?$/.test(v)) return { ok: false }; return { ok: true, p: Math.round(parseFloat(v) * 100) }; }
+  function expSave() { if (storage) try { storage.setItem(EXP_KEY, JSON.stringify(exp)); } catch (e) {} }
+  function expMoney(p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
+  function expTotals() {
+    var t = { total: 0, cash: 0, online: 0, bad: 0, n: 0, by: {} };
+    exp.items.forEach(function (it) { var a = expAmt(it.amt); if (!a.ok) { t.bad++; return; } if (a.blank) return; t.n++; t.total += a.p; if (it.mode === 'Online') t.online += a.p; else t.cash += a.p; t.by[it.type] = (t.by[it.type] || 0) + a.p; });
+    return t;
+  }
+  function expRenderOut() {
+    var t = expTotals(), h = '<h3>Kharcha Summary · ' + esc(expDateText()) + '</h3>';
+    var types = EXP_TYPES.slice(); Object.keys(t.by).forEach(function (k) { if (types.indexOf(k) < 0) types.push(k); });
+    types.forEach(function (k) { if (t.by[k]) h += '<div class="rc"><span>' + esc(k) + '</span><span class="val">' + expMoney(t.by[k]) + '</span></div>'; });
+    if (!t.n) h += '<div class="rc"><span style="color:var(--muted)">Koi kharcha nahi</span><span class="val">₹0</span></div>';
+    h += '<div class="rc"><span>Cash se diya</span><span class="val">' + expMoney(t.cash) + '</span></div>';
+    h += '<div class="rc"><span>Online diya</span><span class="val">' + expMoney(t.online) + '</span></div>';
+    h += '<div class="rc big"><span class="k">Total Kharcha</span><span class="val">' + expMoney(t.total) + '</span></div>';
+    if (t.total) h += '<div class="words">' + esc(C.amountInWords(t.total)) + '</div>';
+    if (t.bad) h += '<div class="s-err" style="margin-top:8px">' + t.bad + ' row mein amount galat hai (total mein nahi juda)</div>';
+    $('eOut').innerHTML = h;
+    $('eEmpty').hidden = exp.items.length > 0;
+  }
+  function expRender() {
+    var b = $('eBody'); b.innerHTML = '';
+    exp.items.forEach(function (it, i) {
+      var r = document.createElement('div'); r.className = 'e-r'; r.dataset.id = it.id;
+      var types = EXP_TYPES.indexOf(it.type) < 0 ? EXP_TYPES.concat([it.type]) : EXP_TYPES;
+      r.innerHTML = '<div class="ix">' + (i + 1) + '</div>' +
+        '<select class="e-type" data-f="type" aria-label="Kharcha type">' + types.map(function (k) { return '<option' + (k === it.type ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select>' +
+        '<input class="e-note" data-f="note" placeholder="' + (it.type === 'Truck / Gaadi Bhada' ? 'Truck no. / firm' : it.type === 'Labour' ? 'Labour ka naam' : 'Detail') + '" value="' + esc(it.note || '') + '" autocomplete="off">' +
+        '<input class="n e-amt" data-f="amt" inputmode="decimal" placeholder="0" value="' + esc(it.amt || '') + '" aria-label="Amount">' +
+        '<select class="e-mode" data-f="mode" aria-label="Paid by"><option' + (it.mode !== 'Online' ? ' selected' : '') + '>Cash</option><option' + (it.mode === 'Online' ? ' selected' : '') + '>Online</option></select>' +
+        '<button class="btn icon e-del" aria-label="Delete" title="Delete">✕</button>';
+      b.appendChild(r);
+      var a = r.querySelector('.e-amt'); a.classList.toggle('err', !expAmt(it.amt).ok);
+    });
+    expRenderOut();
+  }
+  function expAdd(type) {
+    var it = { id: exp.seq++, type: type || 'Other', note: '', amt: '', mode: 'Cash' };
+    exp.items.push(it); expRender(); expSave();
+    var el = $('eBody').querySelector('[data-id="' + it.id + '"] ' + (type === 'Other' ? '.e-note' : '.e-amt')); if (el) el.focus();
+  }
+  function expCsv() {
+    var q = function (v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var lines = [['Date', 'S.No', 'Kharcha Type', 'Detail', 'Amount', 'Paid By'].join(',')];
+    exp.items.forEach(function (it, i) { var a = expAmt(it.amt); if (!a.ok || a.blank) return; lines.push([expDateText(), i + 1, it.type, it.note || '', (a.p / 100).toFixed(2), it.mode || 'Cash'].map(q).join(',')); });
+    var t = expTotals(); lines.push(['', '', 'TOTAL', '', (t.total / 100).toFixed(2), ''].map(q).join(','));
+    download('Kharcha-' + (exp.date || todayISO()) + '.csv', 'text/csv;charset=utf-8', '\ufeff' + lines.join('\r\n'));
+  }
+  function expPrint() {
+    var t = expTotals(); if (!t.n) { toast('Pehle koi kharcha add karo'); return; }
+    var firm = ($('sFirm') && $('sFirm').value.trim()) || '';
+    var tr = function (k, v, c) { return '<tr' + (c ? ' class="' + c + '"' : '') + '><td>' + k + '</td><td>' + v + '</td></tr>'; };
+    var h = '<div class="rh"><div><b>Ghazipur Murga Mandi</b>' + (firm ? '<i>' + esc(firm) + '</i>' : '') + '<span>Kharcha / Expense</span></div><div class="rd">' + esc(expDateText()) + '</div></div><table class="rt" style="margin-top:10px">';
+    var n = 0;
+    exp.items.forEach(function (it) { var a = expAmt(it.amt); if (!a.ok || a.blank) return; n++; h += tr(n + '. ' + esc(it.type) + (it.note ? ' <small>' + esc(it.note) + '</small>' : '') + ' <small>(' + (it.mode || 'Cash') + ')</small>', expMoney(a.p)); });
+    h += tr('Cash se diya', expMoney(t.cash), 'sub') + tr('Online diya', expMoney(t.online)) + tr('Total Kharcha', expMoney(t.total), 'tot due') + '</table>';
+    h += '<div class="rw">' + esc(C.amountInWords(t.total)) + '</div>';
+    $('sReceipt').innerHTML = h;
+    var st = document.createElement('style'); st.id = 'pgSingle'; st.textContent = '@page{size:A4 portrait;margin:12mm}';
+    document.head.appendChild(st); document.body.classList.add('print-rcpt');
+    var done = function () { document.body.classList.remove('print-rcpt'); var x = $('pgSingle'); if (x) x.remove(); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    try { window.print(); } catch (e) { toast('Printing is blocked in this window.'); }
+    setTimeout(function () { if (!window.matchMedia || !window.matchMedia('print').matches) done(); }, 1500);
+  }
+  function initExp() {
+    try { var s = storage && JSON.parse(storage.getItem(EXP_KEY) || 'null'); if (s && s.items) exp = { date: s.date || '', items: s.items, seq: s.seq || s.items.length + 1 }; } catch (e) {}
+    if (!exp.date) exp.date = todayISO();
+    $('eDate').value = exp.date;
+    $('eDate').addEventListener('change', function () { exp.date = $('eDate').value || todayISO(); expRenderOut(); expSave(); });
+    Array.prototype.forEach.call(document.querySelectorAll('.e-quick [data-q]'), function (btn) { btn.onclick = function () { expAdd(btn.getAttribute('data-q')); }; });
+    var b = $('eBody');
+    b.addEventListener('input', function (e) {
+      var r = e.target.closest('.e-r'), f = e.target.getAttribute('data-f'); if (!r || !f) return;
+      var it = exp.items.filter(function (x) { return String(x.id) === r.dataset.id; })[0]; if (!it) return;
+      it[f] = e.target.value; if (f === 'amt') e.target.classList.toggle('err', !expAmt(it.amt).ok);
+      expRenderOut(); expSave();
+    });
+    b.addEventListener('change', function (e) { if (e.target.tagName === 'SELECT') { var ev = document.createEvent('Event'); ev.initEvent('input', true, true); e.target.dispatchEvent(ev); } });
+    b.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.classList.contains('e-amt')) { e.preventDefault(); expAdd('Other'); } });
+    b.addEventListener('click', function (e) {
+      if (!e.target.closest('.e-del')) return; var r = e.target.closest('.e-r');
+      exp.items = exp.items.filter(function (x) { return String(x.id) !== r.dataset.id; }); expRender(); expSave();
+    });
+    $('eClear').onclick = function () {
+      if (!exp.items.length) return;
+      $('dlgT').textContent = 'Saara kharcha hatana hai?'; $('dlgP').textContent = 'Is din ki saari kharcha entries hat jayengi.';
+      confirmDlg(function () { exp.items = []; exp.seq = 1; exp.date = todayISO(); $('eDate').value = exp.date; expRender(); expSave(); });
+    };
+    $('eCsv').onclick = expCsv; $('ePrint').onclick = expPrint;
+    expRender();
   }
 
   // ---------- Init ----------
