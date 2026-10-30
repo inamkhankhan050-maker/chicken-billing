@@ -452,7 +452,7 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
         <div id="eBody"></div>
       </div>
       <div class="e-empty" id="eEmpty">Abhi koi kharcha nahi. Upar button dabakar add karo.</div>
-      <div class="s-acts e-acts"><button class="btn danger" id="eClear">Clear All</button><button class="btn" id="eCsv">Export to Excel</button><button class="btn" id="ePrint">Print / Save PDF</button></div>
+      <div class="s-acts e-acts"><button class="btn danger" id="eClear">Clear All</button><button class="btn" id="eCsv">Export to Excel</button><button class="btn" id="ePrint">Print / Save PDF</button><button class="btn wa" id="eWa"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button></div>
     </div>
     <div class="card e-out" id="eOut" aria-live="polite"></div>
   </section>
@@ -475,6 +475,7 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
     <button class="btn" id="btnExcel"><svg class="xl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 8 8 8M16 8l-8 8"/></svg>Export to Excel</button>
     <button class="btn" id="btnCsv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>CSV</button>
     <button class="btn" id="btnPrint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></svg>Print / Save PDF</button>
+    <button class="btn wa" id="btnWa"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button>
   </section>
 
   <div class="main">
@@ -559,7 +560,7 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
     <div class="card kpi due-k"><div class="l">Balance Baaki</div><div class="n" id="sDue">₹0</div></div>
     <div class="card grand"><div class="l">Grand Total Payable</div><div class="n" id="sGrand">₹0</div><div class="w" id="sWords"></div></div>
   </div>
-  <div class="acts2"><button class="btn" id="mExcel">Export to Excel</button><button class="btn" id="mPrint">Print / PDF</button></div>
+  <div class="acts2"><button class="btn" id="mExcel">Export to Excel</button><button class="btn" id="mPrint">Print / PDF</button><button class="btn wa" id="mWa"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button></div>
 </div>
 
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear all customers?</h4><p id="dlgP">This removes every entry from this bill. It can't be undone.</p><div class="acts"><button class="btn" id="dlgNo">Cancel</button><button class="btn danger-fill" id="dlgYes">Clear All</button></div></div></div>
@@ -1138,6 +1139,7 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
     $('btnCsv').onclick = exportCSV;
     $('btnExcel').onclick = $('mExcel').onclick = exportExcel;
     $('btnPrint').onclick = $('mPrint').onclick = doPrint;
+    $('btnWa').onclick = $('mWa').onclick = shareMulti;
     $('btnSummary').onclick = openSummary; $('btnBack').onclick = closeSummary;
     $('search').addEventListener('input', applySearch);
     var dr = $('defaultRate');
@@ -1335,6 +1337,10 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
     var cv = receiptCanvas(m), blob = jpegPdf(cv.toDataURL('image/jpeg', 0.92), cv.width, cv.height);
     var fname = ('Bill ' + m.name + ' ' + m.date).replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-') + '.pdf';
     var msg = 'Bill · ' + m.date;
+    sharePdf(blob, fname, msg);
+  }
+
+  function sharePdf(blob, fname, msg) {
     var file = null; try { file = new File([blob], fname, { type: 'application/pdf' }); } catch (e) {}
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
       navigator.share({ files: [file], text: msg }).catch(function (e) { if (e && e.name !== 'AbortError') fallback(); });
@@ -1349,7 +1355,60 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
       toast('PDF download ho gayi. WhatsApp mein 📎 se attach karke bhejiye');
     }
   }
-  window.__cbReceipt = { model: receiptModel, pdf: jpegPdf };
+  function canvasPdf(cv) { return jpegPdf(cv.toDataURL('image/jpeg', 0.92), cv.width, cv.height); }
+  // spec: {title, sub, date, cols:[{h, w, r}], rows:[[...]], bold:[rowIndex], sum:[[k, v, color]]}
+  function tableCanvas(spec) {
+    var W = 0; spec.cols.forEach(function (c) { W += c.w; }); var P = 40; W += 2 * P;
+    var S = 2, F = '"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif', RH = 44;
+    var H = 200 + (spec.sub ? 36 : 0) + 56 + spec.rows.length * RH + (spec.sum ? spec.sum.length * 46 + 40 : 0) + 90;
+    var cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S;
+    var g = cv.getContext('2d'); g.scale(S, S); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+    var txt = function (t, x, y, size, color, weight, align, maxW) {
+      g.font = (weight || 400) + ' ' + size + 'px ' + F; g.fillStyle = color || '#111'; g.textAlign = align || 'left';
+      t = String(t); if (maxW) { while (t.length > 1 && g.measureText(t).width > maxW) t = t.slice(0, -2) + '…'; }
+      g.fillText(t, x, y);
+    };
+    var y = 70;
+    txt('Ghazipur Murga Mandi', P, y, 38, '#166534', 700); txt(spec.date, W - P, y, 22, '#444', 400, 'right');
+    if (spec.sub) { y += 38; txt(spec.sub, P, y, 26, '#111', 700); }
+    y += 30; txt(spec.title.toUpperCase(), P, y, 17, '#666', 600);
+    y += 16; g.fillStyle = '#166534'; g.fillRect(P, y, W - 2 * P, 4);
+    y += 20; g.fillStyle = '#F1F5F2'; g.fillRect(P, y, W - 2 * P, 44);
+    var x = P; spec.cols.forEach(function (c) { txt(c.h, c.r ? x + c.w - 10 : x + 10, y + 29, 16, '#334', 700, c.r ? 'right' : 'left'); x += c.w; });
+    y += 44;
+    spec.rows.forEach(function (row, i) {
+      var b = spec.bold && spec.bold.indexOf(i) >= 0;
+      if (b) { g.fillStyle = '#E7F7EC'; g.fillRect(P, y, W - 2 * P, RH); }
+      x = P; spec.cols.forEach(function (c, j) { var v = row[j] == null ? '' : row[j]; txt(v, c.r ? x + c.w - 10 : x + 10, y + 29, 20, (c.color && !b) ? c.color : '#111', b || c.b ? 700 : 400, c.r ? 'right' : 'left', c.w - 16); x += c.w; });
+      y += RH; g.fillStyle = '#E3E3E3'; g.fillRect(P, y - 1, W - 2 * P, 1);
+    });
+    if (spec.sum) {
+      y += 24;
+      spec.sum.forEach(function (sm) { y += 40; var big = sm[3]; txt(sm[0], W - P - 360, y, big ? 28 : 22, sm[2] || '#222', big ? 700 : 500, 'right'); txt(sm[1], W - P, y, big ? 30 : 22, sm[2] || '#111', 700, 'right'); y += 6; });
+    }
+    y += 50; txt('Dhanyavaad · ' + (spec.sub ? spec.sub + ', ' : '') + 'Ghazipur Murga Mandi', W / 2, y, 17, '#777', 400, 'center');
+    return cv;
+  }
+  function firmName() { return ($('sFirm') && $('sFirm').value.trim()) || ''; }
+  function todayText() { return new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  function multiSpec() {
+    var d = exportRows(); if (!d.count) return null;
+    var M = function (v) { return v === '' ? '' : C.formatINR(Math.round(parseFloat(v) * 100), { decimals: Math.round(parseFloat(v) * 100) % 100 ? 2 : 0 }); };
+    var B = function (v) { return v === '' ? '' : dueText(Math.round(parseFloat(v) * 100)); };
+    var map = function (r, tot) {
+      var rec = r[15] === '' && r[16] === '' ? '' : String((parseFloat(r[15] || 0) + parseFloat(r[16] || 0)).toFixed(2));
+      return [tot ? '' : r[0], tot ? 'TOTAL' : r[1], r[2] === '' ? '' : C.formatInt(+r[2]), r[5] === '' ? '' : r[5], tot ? '' : (r[7] === '' ? '' : M(r[7])), M(r[13]), M(r[14]), M(rec), B(r[17])];
+    };
+    var rows = d.rows.map(function (r) { return map(r); }); rows.push(map(d.total, true));
+    return { title: 'Wholesale Bill · ' + d.count + ' customers', sub: firmName(), date: todayText(),
+      cols: [{ h: '#', w: 50 }, { h: 'Customer', w: 300, b: 1 }, { h: 'Pcs', w: 80, r: 1 }, { h: 'Net KG', w: 110, r: 1 }, { h: 'Rate', w: 90, r: 1 }, { h: 'Aaj ka Bill', w: 160, r: 1, b: 1, color: '#166534' }, { h: 'Pichla Bal', w: 150, r: 1 }, { h: 'Received', w: 150, r: 1 }, { h: 'Balance Baaki', w: 170, r: 1, b: 1, color: '#9A3412' }],
+      rows: rows, bold: [rows.length - 1], sum: [['Grand Total', M(d.total[13]), '#166534', 1], ['Balance Baaki', B(d.total[17]), '#9A3412', 1]] };
+  }
+  function shareMulti() {
+    var sp = multiSpec(); if (!sp) { toast('Pehle kam se kam ek customer ka bill bhariye'); return; }
+    sharePdf(canvasPdf(tableCanvas(sp)), 'Bill-Sheet-' + fileStamp() + '.pdf', 'Bill · ' + sp.date);
+  }
+  window.__cbReceipt = { model: receiptModel, pdf: jpegPdf, multiSpec: multiSpec, expSpec: function () { return expSpec(); } };
   function saveSingle() {
     if (!storage) return;
     try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate, jaal: $('sJaal').value, customJaal: singleCustomJaal, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value })); } catch (e) {}
@@ -1475,6 +1534,14 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
     try { window.print(); } catch (e) { toast('Printing is blocked in this window.'); }
     setTimeout(function () { if (!window.matchMedia || !window.matchMedia('print').matches) done(); }, 1500);
   }
+  function expSpec() {
+    var t = expTotals(); if (!t.n) return null;
+    var rows = [], n = 0;
+    exp.items.forEach(function (it) { var a = expAmt(it.amt); if (!a.ok || a.blank) return; rows.push([++n, it.type, it.note || '', it.mode || 'Cash', expMoney(a.p)]); });
+    return { title: 'Kharcha / Expense', sub: firmName(), date: expDateText(),
+      cols: [{ h: '#', w: 50 }, { h: 'Kharcha Type', w: 260, b: 1 }, { h: 'Detail', w: 330 }, { h: 'Diya', w: 110 }, { h: 'Amount', w: 170, r: 1, b: 1 }],
+      rows: rows, sum: [['Cash se diya', expMoney(t.cash)], ['Online diya', expMoney(t.online)], ['Total Kharcha', expMoney(t.total), '#B91C1C', 1]] };
+  }
   function initExp() {
     try { var s = storage && JSON.parse(storage.getItem(EXP_KEY) || 'null'); if (s && s.items) exp = { date: s.date || '', items: s.items, seq: s.seq || s.items.length + 1 }; } catch (e) {}
     if (!exp.date) exp.date = todayISO();
@@ -1498,6 +1565,10 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
       if (!exp.items.length) return;
       $('dlgT').textContent = 'Saara kharcha hatana hai?'; $('dlgP').textContent = 'Is din ki saari kharcha entries hat jayengi.';
       confirmDlg(function () { exp.items = []; exp.seq = 1; exp.date = todayISO(); $('eDate').value = exp.date; expRender(); expSave(); });
+    };
+    $('eWa').onclick = function () {
+      var sp = expSpec(); if (!sp) { toast('Pehle koi kharcha add karo'); return; }
+      sharePdf(canvasPdf(tableCanvas(sp)), 'Kharcha-' + (exp.date || todayISO()) + '.pdf', 'Kharcha · ' + sp.date);
     };
     $('eCsv').onclick = expCsv; $('ePrint').onclick = expPrint;
     expRender();
