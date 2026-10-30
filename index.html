@@ -62,7 +62,7 @@ button,input{font-family:inherit;font-size:inherit;color:inherit}
 /* ---------- Sheet ---------- */
 .sheet{overflow:hidden;display:flex;flex-direction:column}
 .sheet-scroll{overflow:auto;max-height:calc(100vh - 330px);min-height:360px}
-.grid{--cols:40px minmax(160px,1.7fr) minmax(70px,.7fr) minmax(84px,.8fr) minmax(78px,.7fr) minmax(112px,1.05fr) minmax(90px,.85fr) minmax(112px,1fr) minmax(128px,1.15fr) 44px;min-width:960px}
+.grid{--cols:40px minmax(160px,1.7fr) minmax(70px,.7fr) minmax(84px,.8fr) minmax(76px,.7fr) minmax(78px,.7fr) minmax(112px,1.05fr) minmax(90px,.85fr) minmax(112px,1fr) minmax(128px,1.15fr) 44px;min-width:1030px}
 .r{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--line-2);min-height:44px;align-items:stretch}
 .r > .c{display:flex;align-items:center;padding:0 10px;min-width:0}
 .c.idx{justify-content:center;color:var(--faint);font-size:12px;background:var(--head);border-right:1px solid var(--line-2);position:sticky;left:0;z-index:2}
@@ -131,7 +131,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
 .warn{margin-top:8px;padding:8px 10px;border-radius:8px;background:#FEF2F2;color:var(--red);font-size:12.5px}
 
 /* ---------- Totals dashboard ---------- */
-.totals{margin-top:12px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) minmax(260px,1.7fr);gap:12px}
+.totals{margin-top:12px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) minmax(240px,1.6fr);gap:12px}
 .kpi{padding:14px 16px}
 .kpi .l{font-size:12px;color:var(--muted);font-weight:550;text-transform:uppercase;letter-spacing:.03em}
 .kpi .n{margin-top:6px;font-size:21px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
@@ -158,7 +158,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
 .print-head{display:none}
 
 @media (max-width:1180px){
-  .totals{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .totals{grid-template-columns:repeat(4,minmax(0,1fr))}
   .grand{grid-column:1/-1}
 }
 @media (max-width:1899px){
@@ -168,7 +168,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
 @media (max-width:1180px){
   .main{grid-template-columns:1fr}
   .preview{position:static}
-  .totals{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .totals{grid-template-columns:repeat(4,minmax(0,1fr))}
   .grand{grid-column:1/-1}
 }
 
@@ -200,7 +200,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .c.pcs{grid-area:pcs}.c.kg{grid-area:kg}.c.rate{grid-area:rate}
   .c.basic{grid-area:basic}
   .c.fin{grid-area:fin;justify-content:flex-end;font-size:18px;padding-right:34px !important}
-  .c.samiti,.c.labour{display:none}
+  .c.samiti,.c.labour,.c.avg{display:none}
   .c.act{position:absolute;top:8px;right:6px}
   .c.inp,.c.basic{flex-direction:column;align-items:stretch;background:var(--head) !important;border-radius:8px;padding:6px 8px !important}
   .c.basic{background:var(--auto-bg) !important}
@@ -241,7 +241,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .main{display:block}
   .card{box-shadow:none;border-color:#ccc}
   .sheet-scroll{max-height:none;overflow:visible}
-  .grid{--cols:28px 2.2fr .7fr .8fr .8fr 1.1fr .9fr .9fr 1.1fr;min-width:0}
+  .grid{--cols:28px 2.1fr .6fr .8fr .7fr .7fr 1.05fr .85fr .9fr 1.1fr;min-width:0}
   .r{min-height:24px;break-inside:avoid}
   .r.blank,.r.hidden{display:none !important}
   .head,.foot{position:static}
@@ -249,7 +249,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .cell-in{border:0 !important;background:transparent !important;height:auto;padding:0;box-shadow:none}
   .head{min-height:30px}
   .head .tag{display:none}
-  .totals{grid-template-columns:repeat(6,1fr) 1.8fr;gap:6px;break-inside:avoid}
+  .totals{grid-template-columns:repeat(7,1fr) 1.8fr;gap:6px;break-inside:avoid}
   .kpi{padding:6px 8px}.kpi .n{font-size:13px}
   .grand{background:#fff !important;color:#166534;border:2px solid #166534}
   .grand .n{font-size:20px}.grand .l .tag{display:none}
@@ -294,6 +294,8 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   body.mode-single .single{display:block}
   body.mode-single .s-out{border:0;box-shadow:none;max-width:420px}
 }
+
+.c.avg .v{color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -360,6 +362,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
             <div class="c name">Customer Name <span class="tag in">Input</span></div>
             <div class="c r-al">Pieces <span class="tag in">Input</span></div>
             <div class="c r-al">Total KG <span class="tag in">Input</span></div>
+            <div class="c auto r-al">Average <span class="tag au">kg / pc</span></div>
             <div class="c r-al">Rate / KG <span class="tag in">Input</span></div>
             <div class="c auto r-al">Basic Amount <span class="tag au">ƒx Auto</span></div>
             <div class="c auto r-al">Samiti Charge <span class="tag au">ƒx 1%</span></div>
@@ -373,6 +376,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
             <div class="c name">TOTAL</div>
             <div class="c inp"><span class="v" id="fPcs">0</span></div>
             <div class="c inp"><span class="v" id="fKg">0</span></div>
+            <div class="c auto"><span class="v" id="fAvg">—</span></div>
             <div class="c inp"><span class="v dash">—</span></div>
             <div class="c auto"><span class="v" id="fBasic">₹0</span></div>
             <div class="c auto"><span class="v" id="fSamiti">₹0</span></div>
@@ -392,6 +396,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     <div class="card kpi"><div class="l">Total Customers</div><div class="n" id="tCust">0</div></div>
     <div class="card kpi"><div class="l">Total Pieces</div><div class="n" id="tPcs">0</div></div>
     <div class="card kpi"><div class="l">Total Weight</div><div class="n"><span id="tKg">0</span> <small>kg</small></div></div>
+    <div class="card kpi"><div class="l">Average Size</div><div class="n"><span id="tAvg">—</span> <small>kg/pc</small></div></div>
     <div class="card kpi"><div class="l">Total Basic Amount</div><div class="n" id="tBasic">₹0</div></div>
     <div class="card kpi"><div class="l">Total Samiti Charge</div><div class="n" id="tSamiti">₹0</div></div>
     <div class="card kpi"><div class="l">Total Labour Charge</div><div class="n" id="tLabour">₹0</div></div>
@@ -410,6 +415,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     <div class="card kpi"><div class="l">Customers</div><div class="n" id="sCust">0</div></div>
     <div class="card kpi"><div class="l">Pieces</div><div class="n" id="sPcs">0</div></div>
     <div class="card kpi"><div class="l">Weight</div><div class="n"><span id="sKg">0</span> <small>kg</small></div></div>
+    <div class="card kpi"><div class="l">Average</div><div class="n"><span id="sAvg">—</span> <small>kg/pc</small></div></div>
     <div class="card kpi"><div class="l">Basic</div><div class="n" id="sBasic">₹0</div></div>
     <div class="card kpi"><div class="l">Samiti</div><div class="n" id="sSamiti">₹0</div></div>
     <div class="card kpi"><div class="l">Labour</div><div class="n" id="sLabour">₹0</div></div>
@@ -532,6 +538,13 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     return t;
   }
 
+  /** Average bird size: kg per piece, 2 decimals (half-up). null when not computable. */
+  function averageKg(grams, pieces) {
+    if (!(pieces > 0) || !(grams > 0)) return null;
+    var hund = Math.floor((grams * 100 + pieces * 500) / (pieces * 1000));
+    return (Math.floor(hund / 100)) + '.' + ('0' + (hund % 100)).slice(-2);
+  }
+
   // ---------- Formatting (Indian system) ----------
   function groupIndian(intStr) {
     if (intStr.length <= 3) return intStr;
@@ -585,7 +598,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
   var api = {
     parseScaled: parseScaled, validateRow: validateRow, calculate: calculate,
-    computeRow: computeRow, computeTotals: computeTotals,
+    computeRow: computeRow, computeTotals: computeTotals, averageKg: averageKg,
     formatINR: formatINR, formatKg: formatKg, formatInt: formatInt, paiseToPlain: paiseToPlain,
     amountInWords: amountInWords, groupIndian: groupIndian
   };
@@ -648,6 +661,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       '<div class="c name">' + inp('name', 'name-in', 'Enter customer name', 'text') + '<span class="status" hidden></span></div>' +
       '<div class="c inp pcs"><span class="m-lbl">Pieces</span>' + inp('pieces', 'n', 'Pieces', 'numeric') + '</div>' +
       '<div class="c inp kg"><span class="m-lbl">Total KG</span>' + inp('kg', 'n', 'KG', 'decimal') + '</div>' +
+      '<div class="c auto avg"><span class="v" data-o="avg"></span></div>' +
       '<div class="c inp rate"><span class="m-lbl">Rate / KG (₹)</span>' + inp('rate', 'n', 'Rate', 'decimal') + '</div>' +
       '<div class="c auto basic"><span class="m-lbl">Basic Amount</span><span class="v" data-o="basic"></span></div>' +
       '<div class="c auto samiti"><span class="v" data-o="samiti"></span></div>' +
@@ -691,6 +705,8 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     });
     var st = el.querySelector('.status');
     el.classList.toggle('blank', c.status === 'empty');
+    var vv = C.validateRow(row), av = C.averageKg(vv.grams, vv.pieces);
+    setV(out('avg'), av ? av + ' kg' : '—', !av);
     if (c.result && c.status === 'valid') {
       var r = c.result;
       setV(out('basic'), C.formatINR(r.basic));
@@ -700,7 +716,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       var a = out('adj');
       if (r.adjustment > 0) { a.hidden = false; a.textContent = '+' + C.formatINR(r.adjustment, { decimals: 2 }).replace('₹', '₹'); a.title = 'Original ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }); }
       else a.hidden = true;
-      out('meta').textContent = 'Samiti ' + C.formatINR(r.samiti) + ' · Labour ' + C.formatINR(r.labourAdjusted, { decimals: 2 });
+      out('meta').textContent = (av ? 'Avg ' + av + ' kg/pc · ' : '') + 'Samiti ' + C.formatINR(r.samiti) + ' · Labour ' + C.formatINR(r.labourAdjusted, { decimals: 2 });
       st.hidden = true;
     } else {
       ['basic', 'samiti', 'labour', 'final'].forEach(function (k) { setV(out(k), '—', true); });
@@ -727,6 +743,8 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       tLabour: C.formatINR(t.labour), sLabour: C.formatINR(t.labour), fLabour: C.formatINR(t.labour),
       tGrand: C.formatINR(t.grand), sGrand: C.formatINR(t.grand), mGrand: C.formatINR(t.grand), fFinal: C.formatINR(t.grand)
     };
+    var tav = C.averageKg(t.grams, t.pieces) || '—';
+    map.tAvg = tav; map.sAvg = tav; map.fAvg = tav === '—' ? '—' : tav + ' kg';
     Object.keys(map).forEach(function (k) { $(k).textContent = map[k]; });
     $('tWords').textContent = $('sWords').textContent = C.amountInWords(t.grand);
     var extra = [];
@@ -754,7 +772,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     }
     var r = c.result;
     var kg = C.formatKg(c.grams), rate = C.formatINR(c.ratePaise);
-    h += rc('Pieces', C.formatInt(c.pieces)) + rc('Total Weight', kg + ' kg') + rc('Rate', rate + ' / kg') +
+    h += rc('Pieces', C.formatInt(c.pieces)) + rc('Total Weight', kg + ' kg') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(c.pieces) + ' pcs</small>', C.averageKg(c.grams, c.pieces) + ' kg / pc') + rc('Rate', rate + ' / kg') +
       rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
       rc('Original Labour<small>' + C.formatInt(c.pieces) + ' × ₹0.625</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
@@ -803,16 +821,16 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
   // ---------- Export ----------
   function exportRows() {
-    var head = ['S.No', 'Customer Name', 'Pieces', 'Total KG', 'Rate / KG', 'Basic Amount', 'Samiti Charge', 'Original Labour', 'Labour Adjustment', 'Labour Charge', 'Final Amount'];
+    var head = ['S.No', 'Customer Name', 'Pieces', 'Total KG', 'Average KG / Piece', 'Rate / KG', 'Basic Amount', 'Samiti Charge', 'Original Labour', 'Labour Adjustment', 'Labour Charge', 'Final Amount'];
     var rows = [], n = 0;
     state.rows.forEach(function (row) {
       var c = C.computeRow(row);
       if (c.status !== 'valid') return;
       var r = c.result;
-      rows.push([++n, row.name.trim(), c.pieces, C.formatKg(c.grams).replace(/,/g, ''), C.paiseToPlain(c.ratePaise), C.paiseToPlain(r.basic), C.paiseToPlain(r.samiti), C.paiseToPlain(r.labourOriginal), C.paiseToPlain(r.adjustment), C.paiseToPlain(r.labourAdjusted), C.paiseToPlain(r.final)]);
+      rows.push([++n, row.name.trim(), c.pieces, C.formatKg(c.grams).replace(/,/g, ''), C.averageKg(c.grams, c.pieces) || '', C.paiseToPlain(c.ratePaise), C.paiseToPlain(r.basic), C.paiseToPlain(r.samiti), C.paiseToPlain(r.labourOriginal), C.paiseToPlain(r.adjustment), C.paiseToPlain(r.labourAdjusted), C.paiseToPlain(r.final)]);
     });
     var t = C.computeTotals(state.rows);
-    var total = ['', 'TOTAL', t.pieces, C.formatKg(t.grams).replace(/,/g, ''), '', C.paiseToPlain(t.basic), C.paiseToPlain(t.samiti), '', '', C.paiseToPlain(t.labour), C.paiseToPlain(t.grand)];
+    var total = ['', 'TOTAL', t.pieces, C.formatKg(t.grams).replace(/,/g, ''), C.averageKg(t.grams, t.pieces) || '', '', C.paiseToPlain(t.basic), C.paiseToPlain(t.samiti), '', '', C.paiseToPlain(t.labour), C.paiseToPlain(t.grand)];
     return { head: head, rows: rows, total: total, count: n };
   }
   function fileStamp() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
@@ -839,9 +857,9 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       if (v === '' || v == null) return '<Cell' + (style ? ' ss:StyleID="' + style + '"' : '') + '/>';
       return '<Cell' + (style ? ' ss:StyleID="' + style + '"' : '') + '><Data ss:Type="' + (num ? 'Number' : 'String') + '">' + x(v) + '</Data></Cell>';
     };
-    var money = [4, 5, 6, 7, 8, 9, 10];
+    var money = [5, 6, 7, 8, 9, 10, 11];
     var body = d.rows.map(function (r) {
-      return '<Row>' + r.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? (i === 10 ? 'fin' : 'money') : (i === 3 ? 'kg' : null), i !== 1); }).join('') + '</Row>';
+      return '<Row>' + r.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? (i === 11 ? 'fin' : 'money') : (i === 3 || i === 4 ? 'kg' : null), i !== 1); }).join('') + '</Row>';
     }).join('');
     var tot = '<Row>' + d.total.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? 'totm' : 'tot', i > 1 && v !== ''); }).join('') + '</Row>';
     var xml = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>' +
@@ -954,7 +972,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     if (!v.ok) { out.innerHTML = h + '<p class="empty">Pieces, total KG and rate bharte hi bill yahan dikhega.</p>'; return; }
     var r = C.calculate(v.pieces, v.grams, v.ratePaise);
     var kg = C.formatKg(v.grams), rate = C.formatINR(v.ratePaise);
-    h += rc('Pieces', C.formatInt(v.pieces)) + rc('Total Weight', kg + ' kg') + rc('Rate', rate + ' / kg') +
+    h += rc('Pieces', C.formatInt(v.pieces)) + rc('Total Weight', kg + ' kg') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(v.pieces) + ' pcs</small>', (C.averageKg(v.grams, v.pieces) || '—') + ' kg / pc') + rc('Rate', rate + ' / kg') +
       rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
       rc('Original Labour<small>' + C.formatInt(v.pieces) + ' × ₹0.625</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
