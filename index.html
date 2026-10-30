@@ -63,11 +63,13 @@ button,input{font-family:inherit;font-size:inherit;color:inherit}
 /* ---------- Sheet ---------- */
 .sheet{overflow:hidden;display:flex;flex-direction:column}
 .sheet-scroll{overflow:auto;max-height:calc(100vh - 330px);min-height:360px}
-.grid{--cols:40px minmax(160px,1.7fr) minmax(70px,.7fr) minmax(84px,.8fr) minmax(72px,.65fr) minmax(76px,.7fr) minmax(78px,.7fr) minmax(112px,1.05fr) minmax(90px,.85fr) minmax(112px,1fr) minmax(110px,1fr) minmax(92px,.85fr) minmax(88px,.8fr) minmax(88px,.8fr) minmax(108px,1fr) 44px;min-width:1440px}
+.grid{--cols:34px minmax(128px,1.6fr) minmax(54px,.6fr) minmax(64px,.7fr) minmax(52px,.55fr) minmax(64px,.65fr) minmax(58px,.6fr) minmax(86px,.95fr) minmax(66px,.7fr) minmax(80px,.85fr) minmax(94px,1fr) minmax(76px,.8fr) minmax(72px,.75fr) minmax(72px,.75fr) minmax(92px,1fr) 34px;min-width:1150px}
 .r{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--line-2);min-height:44px;align-items:stretch}
-.r > .c{display:flex;align-items:center;padding:0 10px;min-width:0}
+.r > .c{display:flex;align-items:center;padding:0 6px;min-width:0}
+.body .r > .c{font-size:14px}
+.cell-in{font-size:14px}
 .c.idx{justify-content:center;color:var(--faint);font-size:12px;background:var(--head);border-right:1px solid var(--line-2);position:sticky;left:0;z-index:2}
-.c.name{position:sticky;left:40px;z-index:2;background:inherit}
+.c.name{position:sticky;left:34px;z-index:2;background:inherit}
 .c.auto{background:var(--auto-bg);justify-content:flex-end;color:var(--ink-2)}
 .c.fin{background:var(--green-bg);border-left:2px solid var(--green-line);justify-content:flex-end;color:var(--green);font-weight:700}
 .c.act{justify-content:center;padding:0}
@@ -80,19 +82,19 @@ button,input{font-family:inherit;font-size:inherit;color:inherit}
 .body .r.hidden{display:none}
 
 .head{position:sticky;top:0;z-index:5;background:var(--head);border-bottom:1px solid #D9DFE6;min-height:52px}
-.head .c{font-size:12px;font-weight:650;color:var(--ink-2);text-transform:uppercase;letter-spacing:.03em;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;background:var(--head)}
+.head .c{font-size:11px;line-height:1.15;font-weight:650;color:var(--ink-2);text-transform:uppercase;letter-spacing:.03em;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;background:var(--head)}
 .head .c.r-al{align-items:flex-end;text-align:right}
 .head .c.fin{background:#E7F7EC;color:var(--green)}
 .head .c.idx{align-items:center}
-.tag{font-size:12px;letter-spacing:.04em;font-weight:600;padding:1px 6px;border-radius:4px;text-transform:uppercase;line-height:1.4}
+.tag{font-size:10px;letter-spacing:.04em;font-weight:600;padding:1px 6px;border-radius:4px;text-transform:uppercase;line-height:1.4}
 .tag.in{background:#fff;border:1px solid var(--line);color:var(--muted)}
 .tag.au{background:#EAF0F7;color:#3B4A5E}
 .tag.fi{background:var(--green);color:#fff}
 
-.cell-in{width:100%;height:32px;border:1px solid transparent;border-radius:6px;background:transparent;padding:0 8px;outline:none;transition:border-color .1s,background .1s}
+.cell-in{width:100%;height:32px;border:1px solid transparent;border-radius:6px;background:transparent;padding:0 5px;outline:none;transition:border-color .1s,background .1s}
 .cell-in.n{text-align:right}
 .cell-in:hover{border-color:var(--line);background:#fff}
-.cell-in:focus{border:2px solid var(--focus);background:#fff;padding:0 7px;box-shadow:0 0 0 3px rgba(22,163,74,.12)}
+.cell-in:focus{border:2px solid var(--focus);background:#fff;padding:0 4px;box-shadow:0 0 0 3px rgba(22,163,74,.12)}
 .cell-in.name-in{font-weight:550;color:var(--ink)}
 .cell-in::placeholder{color:#A0A8B3;font-weight:400}
 .cell-in.err{border-color:#EF9A9A;background:#FFF5F5}
@@ -341,6 +343,9 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   .rcpt .rw{text-align:right;font-size:12px;color:#444;font-style:italic;margin-top:2px}
   .rcpt .rf{margin-top:14px;padding-top:6px;border-top:1px dashed #aaa;text-align:center;font-size:11px;color:#666}
 }
+
+.del{width:28px;height:28px}
+@media (min-width:1700px){.body .r > .c,.cell-in{font-size:15px}.r > .c{padding:0 9px}}
 </style>
 </head>
 <body>
