@@ -270,7 +270,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
 .modes{display:inline-flex;gap:4px;padding:4px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin-bottom:12px}
 .mode{height:38px;padding:0 18px;border:0;border-radius:9px;background:transparent;font-weight:600;color:var(--ink-2);cursor:pointer}
 .mode.on{background:var(--green);color:#fff}
-.single{display:none;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start;max-width:980px}
+.single{display:none;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:12px;align-items:start;max-width:1400px}
 body.mode-single .single{display:grid}
 body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 .s-in,.s-out{padding:18px}
@@ -392,6 +392,20 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
   .e-quick .btn{flex:1 1 40%;justify-content:center}
 }
 .e-del{width:34px;height:34px;padding:0;justify-content:center;color:var(--muted)}.e-del:hover{color:var(--red);border-color:#FCA5A5}
+
+/* compact single bill output */
+.s-out .sq{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:10px}
+.s-out .sq div{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#FAFBFC}
+.s-out .sq span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.s-out .sq b{font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.s-out .s2{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+.s-out .s2.one{grid-template-columns:1fr}
+.s-out .s2b{border-left:1px solid var(--line-2);padding-left:22px}
+.s-out .rc{padding:7px 0}
+.s-out .big .val{font-size:26px}
+.s-out .due-r .val{color:#9A3412}
+@media (max-width:1100px){.s-out .sq{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:900px){.s-out .s2{grid-template-columns:1fr}.s-out .s2b{border-left:0;padding-left:0;border-top:1px solid var(--line);margin-top:8px}}
 </style>
 </head>
 <body>
@@ -1197,16 +1211,18 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
     if (!v.ok) { out.innerHTML = h + '<p class="empty">Pieces, total KG and rate bharte hi bill yahan dikhega.</p>'; return; }
     var r = C.calculate(v.pieces, v.netGrams, v.ratePaise);
     var gkg = C.formatKg(v.grams), kg = C.formatKg(v.netGrams), rate = C.formatINR(v.ratePaise);
-    h += rc('Pieces', C.formatInt(v.pieces)) + rc('Total Weight', gkg + ' kg') + (v.jaalGrams ? rc('Jaal Weight', '− ' + C.formatKg(v.jaalGrams) + ' kg') + rc('Net Weight<small>' + gkg + ' − ' + C.formatKg(v.jaalGrams) + '</small>', kg + ' kg') : '') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(v.pieces) + ' pcs</small>', (C.averageKg(v.netGrams, v.pieces) || '—') + ' kg / pc') + rc('Rate', rate + ' / kg') +
-      rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
-      rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
-      rc('Original Labour<small>' + C.formatInt(v.pieces) + ' × ₹0.625</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
-      rc('Labour Adjustment<small>to round final to ₹10</small>', '+ ' + C.formatINR(r.adjustment, { decimals: 2 })) +
-      rc('Labour Charge', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
-      '<div class="rc big"><span class="k">Final Amount</span><span class="val" id="sFinal">' + (r.final == null ? '—' : C.formatINR(r.final)) + '</span></div>' +
+    var q = function (k, val) { return '<div><span>' + k + '</span><b>' + val + '</b></div>'; };
+    h += '<div class="sq">' + q('Pieces', C.formatInt(v.pieces)) + q('Total KG', gkg) + (v.jaalGrams ? q('Jaal', '− ' + C.formatKg(v.jaalGrams)) + q('Net KG', kg) : '') +
+      q('Average', (C.averageKg(v.netGrams, v.pieces) || '—') + ' kg') + q('Rate', rate) + '</div>';
+    var L = C.ledger(row, r.final), led = ledgerHTML(L);
+    h += '<div class="s2' + (led ? '' : ' one') + '"><div class="s2a">' +
+      rc('Basic Amount<small>' + kg + ' kg × ' + rate + '</small>', C.formatINR(r.basic)) +
+      rc('Samiti Charge<small>1%, rounded down</small>', C.formatINR(r.samiti)) +
+      rc('Labour Charge<small>' + C.formatInt(v.pieces) + ' × ₹0.625 = ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ' + ' + C.formatINR(r.adjustment, { decimals: 2 }) + ' round-off</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
+      '<div class="rc big"><span class="k">Aaj ka Bill</span><span class="val" id="sFinal">' + (r.final == null ? '—' : C.formatINR(r.final)) + '</span></div>' +
       (r.final != null ? '<div class="words">' + esc(C.amountInWords(r.final)) + '</div>' : '') +
       (r.warning ? '<div class="warn">' + esc(r.warning) + '</div>' : '') +
-      ledgerHTML(C.ledger(row, r.final));
+      '</div>' + (led ? '<div class="s2b">' + led + '</div>' : '') + '</div>';
     out.innerHTML = h;
   }
   function buildReceipt() {
