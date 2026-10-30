@@ -192,24 +192,27 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .sheet-scroll{max-height:none;overflow:visible;min-height:0}
   .grid{min-width:0}
   .head,.foot{display:none}
-  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"name fin" "pcs kg" "rate basic" "meta meta";gap:8px 10px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px;margin-bottom:10px;min-height:0;position:relative}
+  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-areas:"idx name name name name name name fin fin fin fin act" "pcs pcs pcs pcs kg kg kg kg rate rate rate rate" "avg avg avg basic basic basic samiti samiti samiti labour labour labour" "meta meta meta meta meta meta meta meta meta meta meta meta";gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px;margin-bottom:8px;min-height:0;position:relative;align-items:center}
   .body .r.sel{border-color:var(--green-line)}
-  .r > .c{padding:0;background:transparent !important;border:0 !important;position:static}
-  .c.idx{display:none}
+  .r > .c{padding:0;background:transparent !important;border:0 !important;position:static;min-width:0}
+  .c.idx{display:flex !important;grid-area:idx;width:28px;height:28px;border-radius:50%;background:var(--green) !important;color:#fff !important;font-size:13px;font-weight:700;justify-content:center;align-items:center;position:static}
   .c.name{grid-area:name}
   .c.pcs{grid-area:pcs}.c.kg{grid-area:kg}.c.rate{grid-area:rate}
-  .c.basic{grid-area:basic}
-  .c.fin{grid-area:fin;justify-content:flex-end;font-size:18px;padding-right:34px !important}
-  .c.samiti,.c.labour,.c.avg{display:none}
-  .c.act{position:absolute;top:8px;right:6px}
-  .c.inp,.c.basic{flex-direction:column;align-items:stretch;background:var(--head) !important;border-radius:8px;padding:6px 8px !important}
-  .c.basic{background:var(--auto-bg) !important}
-  .m-lbl{display:block;font-size:12px;color:var(--muted);font-weight:550;margin-bottom:2px}
-  .c.basic .v{text-align:right;font-weight:600;min-height:32px;display:flex;align-items:center;justify-content:flex-end}
-  .cell-in{height:36px;font-size:16px;border-color:var(--line);background:#fff}
-  .cell-in.name-in{font-size:16px;font-weight:650;border-color:transparent;padding-left:0}
+  .c.avg{grid-area:avg}.c.basic{grid-area:basic}.c.samiti{grid-area:samiti}.c.labour{grid-area:labour}
+  .c.fin{grid-area:fin;justify-content:flex-end;font-size:18px;font-weight:800}
+  .c.act{grid-area:act;justify-content:flex-end}
+  .c.act .del{width:36px;height:36px}
+  .c.inp{flex-direction:column;align-items:stretch}
+  .c.avg,.c.basic,.c.samiti,.c.labour{display:flex !important;flex-direction:column;align-items:stretch;background:var(--auto-bg) !important;border-radius:8px;padding:5px 6px !important}
+  .m-lbl{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:2px;white-space:nowrap}
+  .c.avg .v,.c.basic .v,.c.samiti .v,.c.labour .v{text-align:right;font-size:13.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .c.labour .lab-wrap{align-items:flex-end}
+  .c.labour .adj{display:none}
+  .cell-in{height:42px;font-size:17px;border-color:var(--line);background:#fff;text-align:right;padding:0 8px}
+  .cell-in.name-in{text-align:left;height:36px;font-size:16px;font-weight:700;border-color:transparent;padding-left:4px}
   .cell-in.name-in:focus{padding-left:7px}
-  .m-meta{grid-area:meta;display:block !important;font-size:12.5px;color:var(--muted);padding-top:2px}
+  .m-meta{grid-area:meta;display:block !important;font-size:12px;color:var(--muted)}
+  .m-meta:empty{display:none !important}
   .sheet-meta{display:none}
   .totals{display:none}
   .m-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));align-items:center;gap:10px;box-shadow:0 -4px 16px rgba(15,23,42,.06)}
@@ -661,11 +664,11 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       '<div class="c name">' + inp('name', 'name-in', 'Enter customer name', 'text') + '<span class="status" hidden></span></div>' +
       '<div class="c inp pcs"><span class="m-lbl">Pieces</span>' + inp('pieces', 'n', 'Pieces', 'numeric') + '</div>' +
       '<div class="c inp kg"><span class="m-lbl">Total KG</span>' + inp('kg', 'n', 'KG', 'decimal') + '</div>' +
-      '<div class="c auto avg"><span class="v" data-o="avg"></span></div>' +
-      '<div class="c inp rate"><span class="m-lbl">Rate / KG (₹)</span>' + inp('rate', 'n', 'Rate', 'decimal') + '</div>' +
-      '<div class="c auto basic"><span class="m-lbl">Basic Amount</span><span class="v" data-o="basic"></span></div>' +
-      '<div class="c auto samiti"><span class="v" data-o="samiti"></span></div>' +
-      '<div class="c auto labour"><span class="lab-wrap"><span class="adj" data-o="adj" hidden></span><span class="v" data-o="labour"></span></span></div>' +
+      '<div class="c auto avg"><span class="m-lbl">Average</span><span class="v" data-o="avg"></span></div>' +
+      '<div class="c inp rate"><span class="m-lbl">Rate / KG</span>' + inp('rate', 'n', 'Rate', 'decimal') + '</div>' +
+      '<div class="c auto basic"><span class="m-lbl">Basic</span><span class="v" data-o="basic"></span></div>' +
+      '<div class="c auto samiti"><span class="m-lbl">Samiti</span><span class="v" data-o="samiti"></span></div>' +
+      '<div class="c auto labour"><span class="m-lbl">Labour</span><span class="lab-wrap"><span class="adj" data-o="adj" hidden></span><span class="v" data-o="labour"></span></span></div>' +
       '<div class="c fin"><span class="v" data-o="final"></span></div>' +
       '<div class="c act"><button class="del" data-del title="Delete row" aria-label="Delete row">' + ICON_DEL + '</button></div>' +
       '<div class="m-meta" data-o="meta"></div>';
@@ -716,7 +719,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       var a = out('adj');
       if (r.adjustment > 0) { a.hidden = false; a.textContent = '+' + C.formatINR(r.adjustment, { decimals: 2 }).replace('₹', '₹'); a.title = 'Original ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }); }
       else a.hidden = true;
-      out('meta').textContent = (av ? 'Avg ' + av + ' kg/pc · ' : '') + 'Samiti ' + C.formatINR(r.samiti) + ' · Labour ' + C.formatINR(r.labourAdjusted, { decimals: 2 });
+      out('meta').textContent = '';
       st.hidden = true;
     } else {
       ['basic', 'samiti', 'labour', 'final'].forEach(function (k) { setV(out(k), '—', true); });
