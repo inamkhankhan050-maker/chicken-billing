@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chicken Wholesale Billing</title>
+<style>:root{
+  --bg:#F4F6F8; --card:#fff; --line:#E3E7EC; --line-2:#EEF1F4;
+  --ink:#0F172A; --ink-2:#334155; --muted:#5B6574; --faint:#6B7480;
+  --green:#166534; --green-2:#15803D; --green-bg:#F0FDF4; --green-line:#BBE5C8;
+  --auto-bg:#F7F9FC; --head:#F8FAFC; --red:#B91C1C; --amber:#92400E; --amber-bg:#FEF3C7;
+  --focus:#16A34A; --radius:10px; --shadow:0 1px 2px rgba(15,23,42,.04),0 2px 8px rgba(15,23,42,.04);
+  --font:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased}
+button,input{font-family:inherit;font-size:inherit;color:inherit}
+.num,.v,input.n{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- Header ---------- */
+.appbar{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.appbar-in{max-width:1600px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:14px}
+.logo{width:36px;height:36px;border-radius:9px;background:var(--green);color:#fff;font-weight:700;display:grid;place-items:center;letter-spacing:.5px;flex:none}
+.brand h1{font-size:16px;margin:0;font-weight:650;letter-spacing:-.01em}
+.brand p{margin:1px 0 0;font-size:12px;color:var(--muted)}
+.appbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;color:var(--ink-2);background:#fff;white-space:nowrap}
+.save-state{color:var(--muted)}
+.save-state .dot{width:7px;height:7px;border-radius:50%;background:#16A34A}
+.save-state.off .dot{background:#D97706}
+.avatar{width:32px;height:32px;border-radius:50%;background:#E8F5EC;color:var(--green);display:grid;place-items:center;font-weight:650;font-size:12.5px;flex:none}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:1600px;margin:0 auto;padding:16px 24px 32px}
+.notice{display:none;margin:0 0 12px;padding:10px 14px;border:1px solid #F5D9A8;background:#FFFBEB;color:var(--amber);border-radius:var(--radius);font-size:13px}
+.notice.show{display:block}
+
+/* ---------- Toolbar ---------- */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:10px;box-shadow:var(--shadow);margin-bottom:12px}
+.search{position:relative;flex:0 1 240px}
+.search input{width:100%;height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px 0 32px;background:#fff;outline:none}
+.search input:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(22,163,74,.15)}
+.search svg{position:absolute;left:10px;top:10px;color:var(--faint)}
+.pill{height:30px;padding:0 10px;border-radius:999px;border:1px dashed #CBD3DC;background:var(--head);font-size:12.5px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pill b{font-weight:600;color:var(--ink)}
+.pill input{width:62px;height:22px;border:1px solid var(--line);border-radius:6px;padding:0 6px;text-align:right;background:#fff}
+.tb-sp{flex:1}
+.btn{height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:#fff;display:inline-flex;align-items:center;gap:7px;font-weight:550;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s,box-shadow .12s}
+.btn:hover{background:#F8FAFC;border-color:#D3D9E0}
+.btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(22,163,74,.25)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.primary:hover{background:#14532D}
+.btn.danger{color:var(--red);border-color:#F2C4C4}
+.btn.danger:hover{background:#FEF2F2}
+.btn .xl{color:#15803D}
+
+/* ---------- Main grid: sheet + preview ---------- */
+.main{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+/* ---------- Sheet ---------- */
+.sheet{overflow:hidden;display:flex;flex-direction:column}
+.sheet-scroll{overflow:auto;max-height:calc(100vh - 330px);min-height:360px}
+.grid{--cols:44px minmax(210px,2.1fr) minmax(84px,.8fr) minmax(96px,.9fr) minmax(96px,.9fr) minmax(118px,1.1fr) minmax(104px,1fr) minmax(108px,1fr) minmax(130px,1.2fr) 46px;min-width:1080px}
+.r{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--line-2);min-height:44px;align-items:stretch}
+.r > .c{display:flex;align-items:center;padding:0 12px;min-width:0}
+.c.idx{justify-content:center;color:var(--faint);font-size:12px;background:var(--head);border-right:1px solid var(--line-2);position:sticky;left:0;z-index:2}
+.c.name{position:sticky;left:44px;z-index:2;background:inherit}
+.c.auto{background:var(--auto-bg);justify-content:flex-end;color:var(--ink-2)}
+.c.fin{background:var(--green-bg);border-left:2px solid var(--green-line);justify-content:flex-end;color:var(--green);font-weight:700}
+.c.act{justify-content:center;padding:0}
+.c.inp{justify-content:flex-end}
+.body .r{background:#fff}
+.body .r:nth-child(even){background:#FCFDFE}
+.body .r:nth-child(even) .c.auto{background:#F3F6FA}
+.body .r:hover{background:#F8FBF9}
+.body .r.sel .c.idx{background:#E8F5EC;color:var(--green);font-weight:650}
+.body .r.hidden{display:none}
+
+.head{position:sticky;top:0;z-index:5;background:var(--head);border-bottom:1px solid #D9DFE6;min-height:52px}
+.head .c{font-size:12px;font-weight:650;color:var(--ink-2);text-transform:uppercase;letter-spacing:.03em;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;background:var(--head)}
+.head .c.r-al{align-items:flex-end;text-align:right}
+.head .c.fin{background:#E7F7EC;color:var(--green)}
+.head .c.idx{align-items:center}
+.tag{font-size:12px;letter-spacing:.04em;font-weight:600;padding:1px 6px;border-radius:4px;text-transform:uppercase;line-height:1.4}
+.tag.in{background:#fff;border:1px solid var(--line);color:var(--muted)}
+.tag.au{background:#EAF0F7;color:#3B4A5E}
+.tag.fi{background:var(--green);color:#fff}
+
+.cell-in{width:100%;height:32px;border:1px solid transparent;border-radius:6px;background:transparent;padding:0 8px;outline:none;transition:border-color .1s,background .1s}
+.cell-in.n{text-align:right}
+.cell-in:hover{border-color:var(--line);background:#fff}
+.cell-in:focus{border:2px solid var(--focus);background:#fff;padding:0 7px;box-shadow:0 0 0 3px rgba(22,163,74,.12)}
+.cell-in.name-in{font-weight:550;color:var(--ink)}
+.cell-in::placeholder{color:#A0A8B3;font-weight:400}
+.cell-in.err{border-color:#EF9A9A;background:#FFF5F5}
+.v{white-space:nowrap}
+.v.dash{color:#A0A8B3}
+.status{font-size:12px;margin-left:8px;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.status.incomplete{background:#F1F5F9;color:var(--muted)}
+.status.invalid,.status.warning{background:#FEE2E2;color:var(--red)}
+.lab-wrap{display:flex;align-items:center;gap:6px}
+.adj{font-size:12px;color:var(--amber);background:var(--amber-bg);padding:0 5px;border-radius:4px}
+.del{width:32px;height:32px;border:0;background:transparent;border-radius:6px;color:#9AA3AE;cursor:pointer;display:grid;place-items:center}
+.del:hover{background:#FEF2F2;color:var(--red)}
+.m-lbl{display:none}
+
+.foot{position:sticky;bottom:0;z-index:4;background:#F1F4F7;border-top:1px solid #D9DFE6;border-bottom:0;font-weight:700}
+.foot .c{background:#F1F4F7}
+.foot .c.fin{background:#DFF3E5}
+.foot .c.name{letter-spacing:.04em;font-size:12.5px}
+.sheet-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);background:#fff}
+kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:#fff;color:var(--ink-2)}
+.empty-state{padding:40px 16px;text-align:center;color:var(--muted)}
+
+/* ---------- Preview panel ---------- */
+.preview{padding:16px;position:sticky;top:70px}
+.preview h3{margin:0;font-size:15px}
+.preview .sub{margin:2px 0 12px;font-size:12.5px;color:var(--muted)}
+.rc{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:13.5px}
+.rc .k{color:var(--ink-2)}
+.rc .k small{display:block;color:var(--muted);font-size:12px}
+.rc .val{font-weight:600;white-space:nowrap}
+.rc.big{border:0;padding-top:12px}
+.rc.big .k{font-weight:650;color:var(--ink)}
+.rc.big .val{font-size:24px;color:var(--green);font-weight:750}
+.badge{font-size:12px;background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:4px;margin-left:6px;white-space:nowrap}
+.footnote{margin:8px 0 0;font-size:12px;color:var(--muted);line-height:1.5}
+.warn{margin-top:8px;padding:8px 10px;border-radius:8px;background:#FEF2F2;color:var(--red);font-size:12.5px}
+
+/* ---------- Totals dashboard ---------- */
+.totals{margin-top:12px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) minmax(260px,1.7fr);gap:12px}
+.kpi{padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--muted);font-weight:550;text-transform:uppercase;letter-spacing:.03em}
+.kpi .n{margin-top:6px;font-size:21px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.kpi .n small{font-size:13px;color:var(--muted);font-weight:500}
+.grand{background:var(--green);border-color:var(--green);color:#fff;padding:16px 18px;display:flex;flex-direction:column;justify-content:center}
+.grand .l{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.9;font-weight:600;display:flex;align-items:center;gap:8px}
+.grand .l .tag{background:#fff;color:var(--green)}
+.grand .n{font-size:36px;font-weight:800;letter-spacing:-.02em;margin-top:4px;white-space:nowrap}
+.grand .w{font-size:12px;opacity:.88;margin-top:2px;line-height:1.4}
+
+/* ---------- Toast & dialog ---------- */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#0F172A;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:all .2s;z-index:100;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.dlg-bg{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:90;padding:16px}
+.dlg-bg.show{display:flex}
+.dlg{background:#fff;border-radius:12px;max-width:400px;width:100%;padding:20px;box-shadow:0 20px 50px rgba(15,23,42,.25)}
+.dlg h4{margin:0 0 6px;font-size:16px}
+.dlg p{margin:0 0 16px;color:var(--ink-2);line-height:1.5}
+.dlg .acts{display:flex;justify-content:flex-end;gap:8px}
+.btn.danger-fill{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ---------- Mobile bar & summary sheet ---------- */
+.m-bar,.m-sheet{display:none}
+.print-head{display:none}
+
+@media (max-width:1180px){
+  .main{grid-template-columns:1fr}
+  .preview{position:static}
+  .totals{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grand{grid-column:1/-1}
+}
+
+/* ================= MOBILE ================= */
+@media (max-width:767px){
+  body{padding-bottom:84px}
+  .appbar-in{padding:10px 14px}
+  .appbar .chip.hide-m,.appbar .avatar{display:none}
+  .brand p{display:none}
+  .wrap{padding:12px 12px 24px}
+  .toolbar{display:grid;grid-template-columns:1fr 1fr;padding:10px;gap:8px}
+  .toolbar .search{grid-column:1/-1;flex:none}
+  .toolbar .pills{grid-column:1/-1;display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+  .toolbar .tb-sp{display:none}
+  .toolbar .btn{justify-content:center;min-height:44px;height:auto}
+  .toolbar #btnAdd{grid-column:1/-1}
+  .pill{min-height:36px}
+  .main{display:block}
+  .preview{display:none}
+  .sheet{background:transparent;border:0;box-shadow:none}
+  .sheet-scroll{max-height:none;overflow:visible;min-height:0}
+  .grid{min-width:0}
+  .head,.foot{display:none}
+  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"name fin" "pcs kg" "rate basic" "meta meta";gap:8px 10px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px;margin-bottom:10px;min-height:0;position:relative}
+  .body .r.sel{border-color:var(--green-line)}
+  .r > .c{padding:0;background:transparent !important;border:0 !important;position:static}
+  .c.idx{display:none}
+  .c.name{grid-area:name}
+  .c.pcs{grid-area:pcs}.c.kg{grid-area:kg}.c.rate{grid-area:rate}
+  .c.basic{grid-area:basic}
+  .c.fin{grid-area:fin;justify-content:flex-end;font-size:18px;padding-right:34px !important}
+  .c.samiti,.c.labour{display:none}
+  .c.act{position:absolute;top:8px;right:6px}
+  .c.inp,.c.basic{flex-direction:column;align-items:stretch;background:var(--head) !important;border-radius:8px;padding:6px 8px !important}
+  .c.basic{background:var(--auto-bg) !important}
+  .m-lbl{display:block;font-size:12px;color:var(--muted);font-weight:550;margin-bottom:2px}
+  .c.basic .v{text-align:right;font-weight:600;min-height:32px;display:flex;align-items:center;justify-content:flex-end}
+  .cell-in{height:36px;font-size:16px;border-color:var(--line);background:#fff}
+  .cell-in.name-in{font-size:16px;font-weight:650;border-color:transparent;padding-left:0}
+  .cell-in.name-in:focus{padding-left:7px}
+  .m-meta{grid-area:meta;display:block !important;font-size:12.5px;color:var(--muted);padding-top:2px}
+  .sheet-meta{display:none}
+  .totals{display:none}
+  .m-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));align-items:center;gap:10px;box-shadow:0 -4px 16px rgba(15,23,42,.06)}
+  .m-bar .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .m-bar .n{font-size:22px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}
+  .m-bar .sp{flex:1}
+  .m-bar .btn{min-height:44px;background:var(--green);border-color:var(--green);color:#fff}
+  .m-sheet.show{display:block;position:fixed;inset:0;z-index:60;background:var(--bg);overflow:auto;padding:0 0 24px}
+  .m-sheet .hd{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:10px 14px}
+  .m-sheet .hd h2{font-size:16px;margin:0;flex:1}
+  .m-sheet .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}
+  .m-sheet .grand{grid-column:1/-1}
+  .m-sheet .grand .n{font-size:32px}
+  .m-sheet .acts2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px}
+  .m-sheet .acts2 .btn{min-height:44px;justify-content:center}
+  .del{width:40px;height:40px}
+}
+.m-meta{display:none}
+
+/* ================= PRINT ================= */
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  body{background:#fff;font-size:11px;padding:0}
+  .appbar,.toolbar,.preview,.m-bar,.m-sheet,.toast,.dlg-bg,.notice,.c.act,.head .c.act,.sheet-meta,.status,.adj{display:none !important}
+  .print-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px;border-bottom:2px solid #166534;padding-bottom:6px}
+  .print-head h2{margin:0;font-size:16px}
+  .print-head p{margin:0;font-size:11px;color:#333}
+  .wrap{padding:0;max-width:none}
+  .main{display:block}
+  .card{box-shadow:none;border-color:#ccc}
+  .sheet-scroll{max-height:none;overflow:visible}
+  .grid{--cols:28px 2.2fr .7fr .8fr .8fr 1.1fr .9fr .9fr 1.1fr;min-width:0}
+  .r{min-height:24px;break-inside:avoid}
+  .r.blank,.r.hidden{display:none !important}
+  .head,.foot{position:static}
+  .c.idx,.c.name{position:static}
+  .cell-in{border:0 !important;background:transparent !important;height:auto;padding:0;box-shadow:none}
+  .head{min-height:30px}
+  .head .tag{display:none}
+  .totals{grid-template-columns:repeat(6,1fr) 1.8fr;gap:6px;break-inside:avoid}
+  .kpi{padding:6px 8px}.kpi .n{font-size:13px}
+  .grand{background:#fff !important;color:#166534;border:2px solid #166534}
+  .grand .n{font-size:20px}.grand .l .tag{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="logo">CB</div>
+    <div class="brand"><h1>Chicken Wholesale Billing</h1><p>Indian Chicken Shop · Sector 63, Noida</p></div>
+    <div class="sp"></div>
+    <span class="chip save-state" id="saveState"><span class="dot"></span><span id="saveText">Saved on this device</span></span>
+    <span class="chip hide-m" id="todayChip"></span>
+    <span class="chip hide-m">Bill Sheet <b id="sheetNo" style="margin-left:4px">#1</b></span>
+    <div class="avatar">MI</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="notice" id="storageNotice">Auto-save isn't available in this preview window, so entries won't survive a refresh here. Download the offline app file and open it in Chrome to keep your bill saved on this device.</div>
+
+  <div class="print-head"><div><h2>Indian Chicken Shop — Wholesale Bill</h2><p>Sector 63, Noida</p></div><p id="printDate"></p></div>
+
+  <section class="toolbar" aria-label="Actions">
+    <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr">Search customer</span><input id="search" type="search" placeholder="Search customer…" autocomplete="off"></label>
+    <div class="pills">
+      <span class="pill">Default rate ₹<input id="defaultRate" class="n" inputmode="decimal" aria-label="Default rate per kg">/kg</span>
+      <span class="pill">Samiti <b>1%</b> (rounded down)</span>
+      <span class="pill">Labour <b>₹0.625</b>/pc</span>
+    </div>
+    <div class="tb-sp"></div>
+    <button class="btn primary" id="btnAdd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Customer</button>
+    <button class="btn" id="btnAdd10"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18"/></svg>Add 10 Rows</button>
+    <button class="btn danger" id="btnClear"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Clear All</button>
+    <button class="btn" id="btnExcel"><svg class="xl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 8 8 8M16 8l-8 8"/></svg>Export to Excel</button>
+    <button class="btn" id="btnCsv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>CSV</button>
+    <button class="btn" id="btnPrint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></svg>Print / Save PDF</button>
+  </section>
+
+  <div class="main">
+    <section class="card sheet" aria-label="Billing table">
+      <div class="sheet-scroll" id="scroll">
+        <div class="grid" role="table">
+          <div class="r head" role="row">
+            <div class="c idx">#</div>
+            <div class="c name">Customer Name <span class="tag in">Input</span></div>
+            <div class="c r-al">Pieces <span class="tag in">Input</span></div>
+            <div class="c r-al">Total KG <span class="tag in">Input</span></div>
+            <div class="c r-al">Rate / KG <span class="tag in">Input</span></div>
+            <div class="c auto r-al">Basic Amount <span class="tag au">ƒx Auto</span></div>
+            <div class="c auto r-al">Samiti Charge <span class="tag au">ƒx 1%</span></div>
+            <div class="c auto r-al">Labour Charge <span class="tag au">ƒx Auto</span></div>
+            <div class="c fin r-al">Final Amount <span class="tag fi">Payable</span></div>
+            <div class="c act"><span class="sr">Delete</span></div>
+          </div>
+          <div class="body" id="body" role="rowgroup"></div>
+          <div class="r foot" role="row">
+            <div class="c idx">Σ</div>
+            <div class="c name">TOTAL</div>
+            <div class="c inp"><span class="v" id="fPcs">0</span></div>
+            <div class="c inp"><span class="v" id="fKg">0</span></div>
+            <div class="c inp"><span class="v dash">—</span></div>
+            <div class="c auto"><span class="v" id="fBasic">₹0</span></div>
+            <div class="c auto"><span class="v" id="fSamiti">₹0</span></div>
+            <div class="c auto"><span class="v" id="fLabour">₹0</span></div>
+            <div class="c fin"><span class="v" id="fFinal">₹0</span></div>
+            <div class="c act"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sheet-meta"><span id="metaCount"></span><span>Press <kbd>Enter</kbd> for the next row, <kbd>Tab</kbd> for the next cell</span></div>
+    </section>
+
+    <aside class="card preview" id="preview" aria-live="polite"></aside>
+  </div>
+
+  <section class="totals" aria-label="Grand total">
+    <div class="card kpi"><div class="l">Total Customers</div><div class="n" id="tCust">0</div></div>
+    <div class="card kpi"><div class="l">Total Pieces</div><div class="n" id="tPcs">0</div></div>
+    <div class="card kpi"><div class="l">Total Weight</div><div class="n"><span id="tKg">0</span> <small>kg</small></div></div>
+    <div class="card kpi"><div class="l">Total Basic Amount</div><div class="n" id="tBasic">₹0</div></div>
+    <div class="card kpi"><div class="l">Total Samiti Charge</div><div class="n" id="tSamiti">₹0</div></div>
+    <div class="card kpi"><div class="l">Total Labour Charge</div><div class="n" id="tLabour">₹0</div></div>
+    <div class="card grand"><div class="l">Grand Total Payable <span class="tag">Payable</span></div><div class="n" id="tGrand">₹0</div><div class="w" id="tWords">Zero Rupees Only</div></div>
+  </section>
+</main>
+
+<!-- Mobile: sticky grand total bar -->
+<div class="m-bar"><div><div class="l">Grand Total</div><div class="n" id="mGrand">₹0</div></div><div class="sp"></div><button class="btn" id="btnSummary">View summary ›</button></div>
+
+<!-- Mobile: summary screen -->
+<div class="m-sheet" id="mSheet" role="dialog" aria-label="Bill summary">
+  <div class="hd"><button class="btn" id="btnBack" aria-label="Back">‹ Back</button><h2>Bill Summary</h2></div>
+  <div class="grid2">
+    <div class="card kpi"><div class="l">Customers</div><div class="n" id="sCust">0</div></div>
+    <div class="card kpi"><div class="l">Pieces</div><div class="n" id="sPcs">0</div></div>
+    <div class="card kpi"><div class="l">Weight</div><div class="n"><span id="sKg">0</span> <small>kg</small></div></div>
+    <div class="card kpi"><div class="l">Basic</div><div class="n" id="sBasic">₹0</div></div>
+    <div class="card kpi"><div class="l">Samiti</div><div class="n" id="sSamiti">₹0</div></div>
+    <div class="card kpi"><div class="l">Labour</div><div class="n" id="sLabour">₹0</div></div>
+    <div class="card grand"><div class="l">Grand Total Payable</div><div class="n" id="sGrand">₹0</div><div class="w" id="sWords"></div></div>
+  </div>
+  <div class="acts2"><button class="btn" id="mExcel">Export to Excel</button><button class="btn" id="mPrint">Print / PDF</button></div>
+</div>
+
+<div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear all customers?</h4><p id="dlgP">This removes every entry from this bill. It can't be undone.</p><div class="acts"><button class="btn" id="dlgNo">Cancel</button><button class="btn danger-fill" id="dlgYes">Clear All</button></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>/* ============================================================
+   Billing calculation engine — pure functions, no DOM.
+   All money is handled in INTEGER PAISE to avoid float errors.
+   Weight is handled in integer GRAMS (up to 3 decimals of kg).
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  var LABOUR_PAISE_X10_PER_PIECE = 625; // ₹0.625 = 62.5 paise  -> stored x10
+  var SAMITI_PERCENT = 1;                // 1%, floored to whole rupee
+  var ROUND_TO_PAISE = 1000;             // final must be a multiple of ₹10
+  var MAX_ADJUSTMENT_PAISE = 999;        // ₹9.99
+
+  /** Parse a decimal string into an integer scaled by 10^places. Returns null if invalid. */
+  function parseScaled(input, places) {
+    if (input === null || input === undefined) return null;
+    var s = String(input).trim().replace(/,/g, '');
+    if (s === '') return null;
+    if (!/^\d*\.?\d*$/.test(s) || s === '.') return NaN; // rejects negatives, letters
+    var parts = s.split('.');
+    var whole = parts[0] || '0';
+    var frac = parts[1] || '';
+    if (frac.length > places) return NaN; // too many decimals
+    while (frac.length < places) frac += '0';
+    var n = parseInt(whole, 10) * Math.pow(10, places) + (frac ? parseInt(frac, 10) : 0);
+    return Number.isSafeInteger(n) ? n : NaN;
+  }
+
+  /** Validate raw row inputs. Returns {ok, status, errors, pieces, grams, ratePaise}. */
+  function validateRow(row) {
+    var errors = {};
+    var name = (row.name || '').trim();
+    var piecesRaw = String(row.pieces == null ? '' : row.pieces).trim();
+    var pieces = piecesRaw === '' ? null : (/^\d+$/.test(piecesRaw) ? parseInt(piecesRaw, 10) : NaN);
+    var grams = parseScaled(row.kg, 3);
+    var ratePaise = parseScaled(row.rate, 2);
+
+    if (pieces !== null && (isNaN(pieces) || pieces < 0 || pieces > 1000000)) errors.pieces = 'Whole number of pieces, 0 or more';
+    if (grams !== null && (isNaN(grams) || grams <= 0)) errors.kg = 'Weight must be more than 0 (max 3 decimals)';
+    if (ratePaise !== null && (isNaN(ratePaise) || ratePaise <= 0)) errors.rate = 'Rate must be more than 0 (max 2 decimals)';
+
+    var isEmpty = !name && pieces === null && grams === null && ratePaise === null;
+    var hasErrors = Object.keys(errors).length > 0;
+    var complete = !!name && pieces !== null && grams !== null && ratePaise !== null;
+
+    var status = isEmpty ? 'empty' : hasErrors ? 'invalid' : complete ? 'valid' : 'incomplete';
+    return { ok: status === 'valid', status: status, errors: errors, pieces: pieces, grams: grams, ratePaise: ratePaise };
+  }
+
+  /** Core formula. Inputs are already-validated integers. Returns all figures in paise. */
+  function calculate(pieces, grams, ratePaise) {
+    // Basic = kg × rate. grams*ratePaise/1000, rounded half-up to the paisa.
+    var basicNum = grams * ratePaise;
+    var basic = Math.floor((basicNum + 500) / 1000);
+
+    // Samiti = FLOOR(basic × 1%) to the whole rupee.
+    var samiti = Math.floor(basic * SAMITI_PERCENT / 100 / 100) * 100;
+
+    // Original labour = pieces × ₹0.625, kept to paise (half-up).
+    var labourOriginal = Math.floor((pieces * LABOUR_PAISE_X10_PER_PIECE + 5) / 10);
+
+    var beforeAdj = basic + samiti + labourOriginal;
+    var adjustment = (ROUND_TO_PAISE - (beforeAdj % ROUND_TO_PAISE)) % ROUND_TO_PAISE;
+
+    var warning = null;
+    if (adjustment < 0 || adjustment > MAX_ADJUSTMENT_PAISE) {
+      warning = 'Labour adjustment out of range (₹0.00–₹9.99). Final amount not calculated.';
+    }
+    var labourAdjusted = labourOriginal + adjustment;
+    var final = basic + samiti + labourAdjusted;
+    if (!warning && final % ROUND_TO_PAISE !== 0) warning = 'Final amount is not a multiple of ₹10.';
+
+    return {
+      basic: basic,
+      samiti: samiti,
+      labourOriginal: labourOriginal,
+      beforeAdjustment: beforeAdj,
+      adjustment: adjustment,
+      labourAdjusted: labourAdjusted,
+      final: warning ? null : final,
+      warning: warning
+    };
+  }
+
+  /** Validate + calculate one row. */
+  function computeRow(row) {
+    var v = validateRow(row);
+    if (!v.ok) return { status: v.status, errors: v.errors, result: null };
+    var r = calculate(v.pieces, v.grams, v.ratePaise);
+    return { status: r.warning ? 'warning' : 'valid', errors: v.errors, result: r, pieces: v.pieces, grams: v.grams, ratePaise: v.ratePaise };
+  }
+
+  /** Grand totals from all valid rows. Grand total = sum of row finals, always. */
+  function computeTotals(rows) {
+    var t = { customers: 0, pieces: 0, grams: 0, basic: 0, samiti: 0, labour: 0, grand: 0, incomplete: 0, invalid: 0 };
+    rows.forEach(function (row) {
+      var c = computeRow(row);
+      if (c.status === 'valid') {
+        t.customers += 1;
+        t.pieces += c.pieces;
+        t.grams += c.grams;
+        t.basic += c.result.basic;
+        t.samiti += c.result.samiti;
+        t.labour += c.result.labourAdjusted;
+        t.grand += c.result.final;
+      } else if (c.status === 'incomplete') t.incomplete += 1;
+      else if (c.status === 'invalid' || c.status === 'warning') t.invalid += 1;
+    });
+    return t;
+  }
+
+  // ---------- Formatting (Indian system) ----------
+  function groupIndian(intStr) {
+    if (intStr.length <= 3) return intStr;
+    var last3 = intStr.slice(-3);
+    var rest = intStr.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    return rest + ',' + last3;
+  }
+  /** ₹ format from paise. opts.decimals: 'auto' (show paise only if non-zero) | 2 */
+  function formatINR(paise, opts) {
+    if (paise === null || paise === undefined) return '—';
+    opts = opts || {};
+    var neg = paise < 0; var p = Math.abs(paise);
+    var rupees = Math.floor(p / 100); var ps = p % 100;
+    var showDec = opts.decimals === 2 || (opts.decimals !== 0 && ps !== 0);
+    var s = '₹' + groupIndian(String(rupees)) + (showDec ? '.' + (ps < 10 ? '0' : '') + ps : '');
+    return (neg ? '−' : '') + s;
+  }
+  function formatKg(grams) {
+    if (grams === null || grams === undefined) return '—';
+    var whole = Math.floor(grams / 1000); var g = grams % 1000;
+    var dec = g ? ('.' + String(g + 1000).slice(1)).replace(/0+$/, '') : '';
+    return groupIndian(String(whole)) + dec;
+  }
+  function formatInt(n) { return groupIndian(String(n)); }
+  function paiseToPlain(paise) { // for CSV/Excel: 17580.00
+    var neg = paise < 0; var p = Math.abs(paise);
+    return (neg ? '-' : '') + Math.floor(p / 100) + '.' + String(p % 100 + 100).slice(1);
+  }
+
+  // ---------- Amount in words (Indian) ----------
+  var ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  var TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  function two(n) { return n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? ' ' + ONES[n % 10] : ''); }
+  function three(n) { var h = Math.floor(n / 100), r = n % 100; return (h ? ONES[h] + ' Hundred' + (r ? ' ' : '') : '') + (r ? two(r) : ''); }
+  function numberToWordsIndian(n) {
+    if (n === 0) return 'Zero';
+    var parts = [];
+    var crore = Math.floor(n / 10000000); n %= 10000000;
+    var lakh = Math.floor(n / 100000); n %= 100000;
+    var thousand = Math.floor(n / 1000); n %= 1000;
+    if (crore) parts.push((crore > 999 ? numberToWordsIndian(crore) : three(crore)) + ' Crore');
+    if (lakh) parts.push(two(lakh) + ' Lakh');
+    if (thousand) parts.push(two(thousand) + ' Thousand');
+    if (n) parts.push(three(n));
+    return parts.join(' ');
+  }
+  function amountInWords(paise) {
+    var r = Math.floor(paise / 100), p = paise % 100;
+    return numberToWordsIndian(r) + ' Rupees' + (p ? ' and ' + two(p) + ' Paise' : '') + ' Only';
+  }
+
+  var api = {
+    parseScaled: parseScaled, validateRow: validateRow, calculate: calculate,
+    computeRow: computeRow, computeTotals: computeTotals,
+    formatINR: formatINR, formatKg: formatKg, formatInt: formatInt, paiseToPlain: paiseToPlain,
+    amountInWords: amountInWords, groupIndian: groupIndian
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.BillingCalc = api;
+})(typeof window !== 'undefined' ? window : this);
+</script>
+<script>/* ============================================================
+   UI layer. All maths goes through window.BillingCalc (calc.js).
+   ============================================================ */
+(function () {
+  'use strict';
+  var C = window.BillingCalc;
+  var STORE_KEY = 'chickenBilling.v1';
+  var MAX_ROWS = 500;
+  var FIELDS = ['name', 'pieces', 'kg', 'rate'];
+
+  var SAMPLE = [
+    ['Customer 01', 50, 193, 90], ['Sharma Chicken Centre', 120, 462, 92], ['Al-Noor Meat Shop', 80, 310, 90],
+    ['Royal Hotel & Caterers', 200, 786, 88], ['Gupta Poultry Point', 65, 248, 91], ['Fresh Choice Chicken', 40, 151, 92],
+    ['Khan Brothers', 150, 579, 89], ['City Dhaba', 30, 112, 93], ['New Delhi Biryani House', 95, 368, 90], ['Rahman Chicken Corner', 55, 212, 91]
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var uid = function () { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
+  var newRow = function (o) { o = o || {}; return { id: uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '' }; };
+
+  var state = { rows: [], defaultRate: '90', sheetNo: 1, selectedId: null };
+
+  // ---------- Persistence (local only, never sent anywhere) ----------
+  var storage = (function () {
+    try { var k = '__t'; window.localStorage.setItem(k, '1'); window.localStorage.removeItem(k); return window.localStorage; }
+    catch (e) { return null; }
+  })();
+  function load() {
+    if (!storage) return null;
+    try { var d = JSON.parse(storage.getItem(STORE_KEY) || 'null'); return d && Array.isArray(d.rows) ? d : null; } catch (e) { return null; }
+  }
+  var saveTimer = null;
+  function save() {
+    if (!storage) return;
+    clearTimeout(saveTimer);
+    $('saveText').textContent = 'Saving…';
+    saveTimer = setTimeout(function () {
+      try {
+        storage.setItem(STORE_KEY, JSON.stringify({ rows: state.rows, defaultRate: state.defaultRate, sheetNo: state.sheetNo, savedAt: new Date().toISOString() }));
+        $('saveText').textContent = 'Saved on this device';
+      } catch (e) { $('saveText').textContent = 'Not saved (storage full)'; $('saveState').classList.add('off'); }
+    }, 250);
+  }
+
+  // ---------- Row DOM ----------
+  var ICON_DEL = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+  function rowHTML(row) {
+    function inp(f, cls, ph, mode) {
+      return '<input class="cell-in ' + cls + '" data-f="' + f + '" inputmode="' + mode + '" autocomplete="off" placeholder="' + ph + '" aria-label="' + ph + '">';
+    }
+    return '' +
+      '<div class="c idx"></div>' +
+      '<div class="c name">' + inp('name', 'name-in', 'Enter customer name', 'text') + '<span class="status" hidden></span></div>' +
+      '<div class="c inp pcs"><span class="m-lbl">Pieces</span>' + inp('pieces', 'n', 'Pieces', 'numeric') + '</div>' +
+      '<div class="c inp kg"><span class="m-lbl">Total KG</span>' + inp('kg', 'n', 'KG', 'decimal') + '</div>' +
+      '<div class="c inp rate"><span class="m-lbl">Rate / KG (₹)</span>' + inp('rate', 'n', 'Rate', 'decimal') + '</div>' +
+      '<div class="c auto basic"><span class="m-lbl">Basic Amount</span><span class="v" data-o="basic"></span></div>' +
+      '<div class="c auto samiti"><span class="v" data-o="samiti"></span></div>' +
+      '<div class="c auto labour"><span class="lab-wrap"><span class="adj" data-o="adj" hidden></span><span class="v" data-o="labour"></span></span></div>' +
+      '<div class="c fin"><span class="v" data-o="final"></span></div>' +
+      '<div class="c act"><button class="del" data-del title="Delete row" aria-label="Delete row">' + ICON_DEL + '</button></div>' +
+      '<div class="m-meta" data-o="meta"></div>';
+  }
+  function buildRow(row) {
+    var el = document.createElement('div');
+    el.className = 'r';
+    el.setAttribute('role', 'row');
+    el.dataset.id = row.id;
+    el.innerHTML = rowHTML(row);
+    FIELDS.forEach(function (f) { el.querySelector('[data-f="' + f + '"]').value = row[f]; });
+    return el;
+  }
+  function renderAll() {
+    var body = $('body');
+    body.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    state.rows.forEach(function (r) { frag.appendChild(buildRow(r)); });
+    body.appendChild(frag);
+    state.rows.forEach(function (r) { updateRow(r); });
+    renumber(); applySearch(); updateTotals(); renderPreview();
+  }
+  function rowEl(id) { return $('body').querySelector('.r[data-id="' + id + '"]'); }
+  function renumber() {
+    var n = 0;
+    $('body').querySelectorAll('.r').forEach(function (el) { el.querySelector('.idx').textContent = ++n; });
+  }
+
+  function updateRow(row) {
+    var el = rowEl(row.id); if (!el) return;
+    var c = C.computeRow(row);
+    var out = function (k) { return el.querySelector('[data-o="' + k + '"]'); };
+    ['pieces', 'kg', 'rate'].forEach(function (f) {
+      var i = el.querySelector('[data-f="' + f + '"]');
+      i.classList.toggle('err', !!c.errors[f]);
+      i.title = c.errors[f] || '';
+    });
+    var st = el.querySelector('.status');
+    el.classList.toggle('blank', c.status === 'empty');
+    if (c.result && c.status === 'valid') {
+      var r = c.result;
+      setV(out('basic'), C.formatINR(r.basic));
+      setV(out('samiti'), C.formatINR(r.samiti));
+      setV(out('labour'), C.formatINR(r.labourAdjusted, { decimals: 2 }));
+      setV(out('final'), C.formatINR(r.final));
+      var a = out('adj');
+      if (r.adjustment > 0) { a.hidden = false; a.textContent = '+' + C.formatINR(r.adjustment, { decimals: 2 }).replace('₹', '₹'); a.title = 'Original ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }); }
+      else a.hidden = true;
+      out('meta').textContent = 'Samiti ' + C.formatINR(r.samiti) + ' · Labour ' + C.formatINR(r.labourAdjusted, { decimals: 2 });
+      st.hidden = true;
+    } else {
+      ['basic', 'samiti', 'labour', 'final'].forEach(function (k) { setV(out(k), '—', true); });
+      out('adj').hidden = true;
+      out('meta').textContent = c.status === 'incomplete' ? 'Fill name, pieces, KG and rate to calculate' : c.status === 'empty' ? '' : (c.result && c.result.warning) || 'Check the highlighted values';
+      if (c.status === 'incomplete' || c.status === 'invalid' || c.status === 'warning') {
+        st.hidden = false; st.className = 'status ' + c.status;
+        st.textContent = c.status === 'incomplete' ? 'Incomplete' : c.status === 'warning' ? 'Warning' : 'Invalid';
+        st.title = c.status === 'warning' ? c.result.warning : Object.values(c.errors).join('; ');
+      } else st.hidden = true;
+    }
+  }
+  function setV(el, text, dash) { el.textContent = text; el.classList.toggle('dash', !!dash); }
+
+  // ---------- Totals ----------
+  function updateTotals() {
+    var t = C.computeTotals(state.rows);
+    var map = {
+      tCust: C.formatInt(t.customers), sCust: C.formatInt(t.customers),
+      tPcs: C.formatInt(t.pieces), sPcs: C.formatInt(t.pieces), fPcs: C.formatInt(t.pieces),
+      tKg: C.formatKg(t.grams), sKg: C.formatKg(t.grams), fKg: C.formatKg(t.grams),
+      tBasic: C.formatINR(t.basic), sBasic: C.formatINR(t.basic), fBasic: C.formatINR(t.basic),
+      tSamiti: C.formatINR(t.samiti), sSamiti: C.formatINR(t.samiti), fSamiti: C.formatINR(t.samiti),
+      tLabour: C.formatINR(t.labour), sLabour: C.formatINR(t.labour), fLabour: C.formatINR(t.labour),
+      tGrand: C.formatINR(t.grand), sGrand: C.formatINR(t.grand), mGrand: C.formatINR(t.grand), fFinal: C.formatINR(t.grand)
+    };
+    Object.keys(map).forEach(function (k) { $(k).textContent = map[k]; });
+    $('tWords').textContent = $('sWords').textContent = C.amountInWords(t.grand);
+    var extra = [];
+    if (t.incomplete) extra.push(t.incomplete + ' incomplete');
+    if (t.invalid) extra.push(t.invalid + ' need checking');
+    $('metaCount').textContent = t.customers + ' customer' + (t.customers === 1 ? '' : 's') + ' calculated · ' + state.rows.length + ' rows' + (extra.length ? ' · ' + extra.join(', ') + ' (not included in totals)' : '');
+    return t;
+  }
+
+  // ---------- Calculation preview ----------
+  function renderPreview() {
+    var p = $('preview');
+    var row = state.rows.filter(function (r) { return r.id === state.selectedId; })[0] ||
+              state.rows.filter(function (r) { return C.computeRow(r).status === 'valid'; })[0];
+    $('body').querySelectorAll('.r.sel').forEach(function (e) { e.classList.remove('sel'); });
+    if (!row) { p.innerHTML = '<h3>Calculation Preview</h3><p class="sub">Select a row to see its breakdown</p><p class="footnote">Enter a customer\'s pieces, weight and rate. The breakdown appears here.</p>'; return; }
+    var el = rowEl(row.id); if (el) el.classList.add('sel');
+    var c = C.computeRow(row);
+    var name = row.name.trim() || 'Unnamed customer';
+    var idx = state.rows.indexOf(row) + 1;
+    var h = '<h3>Calculation Preview</h3><p class="sub">' + esc(name) + ' · row ' + idx + '</p>';
+    if (!c.result) {
+      h += '<p class="footnote">' + (c.status === 'invalid' ? 'Some values are invalid: ' + esc(Object.values(c.errors).join('; ')) + '.' : 'This row is incomplete. Fill customer name, pieces, total KG and rate.') + '</p>';
+      p.innerHTML = h; return;
+    }
+    var r = c.result;
+    var kg = C.formatKg(c.grams), rate = C.formatINR(c.ratePaise);
+    h += rc('Pieces', C.formatInt(c.pieces)) + rc('Total Weight', kg + ' kg') + rc('Rate', rate + ' / kg') +
+      rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
+      rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
+      rc('Original Labour<small>' + C.formatInt(c.pieces) + ' × ₹0.625</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
+      rc('Labour Adjustment<span class="badge">Round to ₹10</span>', '+ ' + C.formatINR(r.adjustment, { decimals: 2 })) +
+      rc('Adjusted Labour', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
+      '<div class="rc big"><span class="k">Final Amount</span><span class="val">' + (r.final == null ? '—' : C.formatINR(r.final)) + '</span></div>' +
+      (r.warning ? '<div class="warn">' + esc(r.warning) + '</div>' : '') +
+      '<p class="footnote">Labour is adjusted upward only, so the final bill lands on a multiple of ₹10. Basic and Samiti never change.</p>';
+    p.innerHTML = h;
+  }
+  function rc(k, v) { return '<div class="rc"><span class="k">' + k + '</span><span class="val">' + v + '</span></div>'; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); }
+
+  // ---------- Actions ----------
+  function addRows(n, focus) {
+    var room = MAX_ROWS - state.rows.length;
+    if (room <= 0) { toast('Maximum of ' + MAX_ROWS + ' rows per bill reached'); return; }
+    n = Math.min(n, room);
+    var body = $('body'), first = null;
+    for (var i = 0; i < n; i++) {
+      var r = newRow({ rate: state.defaultRate });
+      state.rows.push(r);
+      var el = buildRow(r); body.appendChild(el); updateRow(r);
+      if (!first) first = el;
+    }
+    renumber(); updateTotals(); save();
+    if (focus && first) { first.querySelector('[data-f="name"]').focus(); if (first.scrollIntoView) first.scrollIntoView({ block: 'nearest' }); }
+    if (n > 1) toast(n + ' rows added');
+  }
+  function deleteRow(id) {
+    var i = state.rows.findIndex(function (r) { return r.id === id; });
+    if (i < 0) return;
+    var removed = state.rows.splice(i, 1)[0];
+    var el = rowEl(id); if (el) el.remove();
+    if (state.selectedId === id) state.selectedId = null;
+    renumber(); updateTotals(); renderPreview(); save();
+    toast('Deleted ' + (removed.name.trim() || 'row ' + (i + 1)));
+  }
+  function clearAll() {
+    state.rows = []; state.selectedId = null; state.sheetNo += 1;
+    $('sheetNo').textContent = '#' + state.sheetNo;
+    $('search').value = '';
+    renderAll(); addRows(10, false); save();
+    toast('Bill cleared. New sheet started.');
+  }
+
+  // ---------- Export ----------
+  function exportRows() {
+    var head = ['S.No', 'Customer Name', 'Pieces', 'Total KG', 'Rate / KG', 'Basic Amount', 'Samiti Charge', 'Original Labour', 'Labour Adjustment', 'Labour Charge', 'Final Amount'];
+    var rows = [], n = 0;
+    state.rows.forEach(function (row) {
+      var c = C.computeRow(row);
+      if (c.status !== 'valid') return;
+      var r = c.result;
+      rows.push([++n, row.name.trim(), c.pieces, C.formatKg(c.grams).replace(/,/g, ''), C.paiseToPlain(c.ratePaise), C.paiseToPlain(r.basic), C.paiseToPlain(r.samiti), C.paiseToPlain(r.labourOriginal), C.paiseToPlain(r.adjustment), C.paiseToPlain(r.labourAdjusted), C.paiseToPlain(r.final)]);
+    });
+    var t = C.computeTotals(state.rows);
+    var total = ['', 'TOTAL', t.pieces, C.formatKg(t.grams).replace(/,/g, ''), '', C.paiseToPlain(t.basic), C.paiseToPlain(t.samiti), '', '', C.paiseToPlain(t.labour), C.paiseToPlain(t.grand)];
+    return { head: head, rows: rows, total: total, count: n };
+  }
+  function fileStamp() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function download(name, mime, content) {
+    try {
+      var blob = new Blob([content], { type: mime });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1500);
+      toast('Downloaded ' + name);
+    } catch (e) { toast('Download blocked in this window. Use the offline app file.'); }
+  }
+  function exportCSV() {
+    var d = exportRows(); if (!d.count) { toast('No complete customer rows to export'); return; }
+    var q = function (v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var lines = [d.head].concat(d.rows, [d.total]).map(function (r) { return r.map(q).join(','); });
+    download('chicken-bill-' + fileStamp() + '.csv', 'text/csv;charset=utf-8', '\uFEFF' + lines.join('\r\n'));
+  }
+  function exportExcel() {
+    var d = exportRows(); if (!d.count) { toast('No complete customer rows to export'); return; }
+    var x = function (v) { return String(v).replace(/[&<>"]/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]; }); };
+    var cell = function (v, style, num) {
+      if (v === '' || v == null) return '<Cell' + (style ? ' ss:StyleID="' + style + '"' : '') + '/>';
+      return '<Cell' + (style ? ' ss:StyleID="' + style + '"' : '') + '><Data ss:Type="' + (num ? 'Number' : 'String') + '">' + x(v) + '</Data></Cell>';
+    };
+    var money = [4, 5, 6, 7, 8, 9, 10];
+    var body = d.rows.map(function (r) {
+      return '<Row>' + r.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? (i === 10 ? 'fin' : 'money') : (i === 3 ? 'kg' : null), i !== 1); }).join('') + '</Row>';
+    }).join('');
+    var tot = '<Row>' + d.total.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? 'totm' : 'tot', i > 1 && v !== ''); }).join('') + '</Row>';
+    var xml = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>' +
+      '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+      '<Styles><Style ss:ID="h"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#166534" ss:Pattern="Solid"/></Style>' +
+      '<Style ss:ID="money"><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style>' +
+      '<Style ss:ID="kg"><NumberFormat ss:Format="0.###"/></Style>' +
+      '<Style ss:ID="fin"><Font ss:Bold="1" ss:Color="#166534"/><Interior ss:Color="#F0FDF4" ss:Pattern="Solid"/><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style>' +
+      '<Style ss:ID="tot"><Font ss:Bold="1"/><Interior ss:Color="#F1F4F7" ss:Pattern="Solid"/></Style>' +
+      '<Style ss:ID="totm"><Font ss:Bold="1"/><Interior ss:Color="#F1F4F7" ss:Pattern="Solid"/><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style></Styles>' +
+      '<Worksheet ss:Name="Bill ' + fileStamp() + '"><Table>' +
+      '<Column ss:Width="40"/><Column ss:Width="190"/>' + '<Column ss:Width="80"/>'.repeat(9) +
+      '<Row>' + d.head.map(function (h) { return cell(h, 'h'); }).join('') + '</Row>' + body + tot +
+      '</Table></Worksheet></Workbook>';
+    download('chicken-bill-' + fileStamp() + '.xls', 'application/vnd.ms-excel', xml);
+  }
+  function doPrint() {
+    $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    closeSummary();
+    try { window.print(); } catch (e) { toast('Printing is blocked in this window. Use the offline app file.'); }
+  }
+
+  // ---------- UI helpers ----------
+  var toastT;
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2400); }
+  function confirmDlg(onYes) {
+    var d = $('dlg'); d.classList.add('show'); $('dlgNo').focus();
+    var close = function () { d.classList.remove('show'); $('dlgYes').onclick = $('dlgNo').onclick = null; };
+    $('dlgNo').onclick = close;
+    $('dlgYes').onclick = function () { close(); onYes(); };
+  }
+  function applySearch() {
+    var q = $('search').value.trim().toLowerCase();
+    state.rows.forEach(function (r) { var el = rowEl(r.id); if (el) el.classList.toggle('hidden', !!q && r.name.toLowerCase().indexOf(q) < 0); });
+  }
+  function openSummary() { $('mSheet').classList.add('show'); }
+  function closeSummary() { $('mSheet').classList.remove('show'); }
+
+  // ---------- Events ----------
+  function bind() {
+    var body = $('body');
+    body.addEventListener('input', function (e) {
+      var f = e.target.dataset.f; if (!f) return;
+      var id = e.target.closest('.r').dataset.id;
+      var row = state.rows.filter(function (r) { return r.id === id; })[0]; if (!row) return;
+      row[f] = e.target.value;
+      updateRow(row); updateTotals();
+      if (state.selectedId === id || !state.selectedId) { state.selectedId = id; renderPreview(); }
+      if (f === 'name') applySearch();
+      save();
+    });
+    body.addEventListener('focusin', function (e) {
+      var r = e.target.closest('.r'); if (!r || state.selectedId === r.dataset.id) return;
+      state.selectedId = r.dataset.id; renderPreview();
+    });
+    body.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-del]'); if (b) deleteRow(b.closest('.r').dataset.id);
+    });
+    body.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || !e.target.dataset.f) return;
+      e.preventDefault();
+      var f = e.target.dataset.f, rowE = e.target.closest('.r');
+      var next = rowE.nextElementSibling;
+      while (next && next.classList.contains('hidden')) next = next.nextElementSibling;
+      if (!next) { addRows(1, false); next = body.lastElementChild; }
+      var i = next.querySelector('[data-f="' + f + '"]'); i.focus(); i.select && i.select();
+    });
+    $('btnAdd').onclick = function () { addRows(1, true); };
+    $('btnAdd10').onclick = function () { addRows(10, false); };
+    $('btnClear').onclick = function () { confirmDlg(clearAll); };
+    $('btnCsv').onclick = exportCSV;
+    $('btnExcel').onclick = $('mExcel').onclick = exportExcel;
+    $('btnPrint').onclick = $('mPrint').onclick = doPrint;
+    $('btnSummary').onclick = openSummary; $('btnBack').onclick = closeSummary;
+    $('search').addEventListener('input', applySearch);
+    var dr = $('defaultRate');
+    dr.addEventListener('input', function () {
+      var v = C.parseScaled(dr.value, 2);
+      dr.classList.toggle('err', !(v > 0));
+      if (v > 0) { state.defaultRate = dr.value.trim(); save(); }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('dlg').classList.remove('show'); closeSummary(); } });
+    window.addEventListener('beforeprint', function () { $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); });
+  }
+
+  // ---------- Init ----------
+  function init() {
+    $('todayChip').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    var saved = load();
+    if (saved) {
+      state.rows = saved.rows.map(function (r) { return newRow(r); });
+      state.defaultRate = saved.defaultRate || '90';
+      state.sheetNo = saved.sheetNo || 1;
+    } else {
+      state.rows = SAMPLE.map(function (s) { return newRow({ name: s[0], pieces: s[1], kg: s[2], rate: s[3] }); });
+      state.rows.push(newRow({ rate: '90' }), newRow({ rate: '90' }));
+    }
+    if (!storage) { $('storageNotice').classList.add('show'); $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved (preview)'; }
+    $('defaultRate').value = state.defaultRate;
+    $('sheetNo').textContent = '#' + state.sheetNo;
+    state.selectedId = state.rows[0] && state.rows[0].id;
+    bind(); renderAll();
+    if (!saved && storage) { save(); toast('Sample bill loaded. Use Clear All to start a fresh bill.'); }
+  }
+  init();
+
+  // Expose for automated testing only
+  window.__billing = { state: state, addRows: addRows, deleteRow: deleteRow, clearAll: clearAll, exportRows: exportRows };
+})();
+</script>
+</body>
+</html>
