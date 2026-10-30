@@ -329,7 +329,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   <section class="toolbar" aria-label="Actions">
     <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr">Search customer</span><input id="search" type="search" placeholder="Search customer…" autocomplete="off"></label>
     <div class="pills">
-      <span class="pill">Default rate ₹<input id="defaultRate" class="n" inputmode="decimal" aria-label="Default rate per kg">/kg</span>
+      <span class="pill" title="Applies to every row; a rate you change in a row stays as you set it">Default rate ₹<input id="defaultRate" class="n" inputmode="decimal" aria-label="Default rate per kg, applies to all rows">/kg <small style="color:var(--faint)">· sab rows mein</small></span>
       <span class="pill">Samiti <b>1%</b> (rounded down)</span>
       <span class="pill">Labour <b>₹0.625</b>/pc</span>
     </div>
@@ -602,7 +602,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
   var $ = function (id) { return document.getElementById(id); };
   var uid = function () { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
-  var newRow = function (o) { o = o || {}; return { id: uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '' }; };
+  var newRow = function (o) { o = o || {}; return { id: uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '', customRate: !!o.customRate }; };
 
   var state = { rows: [], defaultRate: '90', sheetNo: 1, selectedId: null };
 
@@ -879,6 +879,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       var id = e.target.closest('.r').dataset.id;
       var row = state.rows.filter(function (r) { return r.id === id; })[0]; if (!row) return;
       row[f] = e.target.value;
+      if (f === 'rate') row.customRate = row.rate.trim() !== '' && row.rate.trim() !== state.defaultRate;
       updateRow(row); updateTotals();
       if (state.selectedId === id || !state.selectedId) { state.selectedId = id; renderPreview(); }
       if (f === 'name') applySearch();
@@ -912,7 +913,19 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     dr.addEventListener('input', function () {
       var v = C.parseScaled(dr.value, 2);
       dr.classList.toggle('err', !(v > 0));
-      if (v > 0) { state.defaultRate = dr.value.trim(); save(); }
+      if (v > 0) {
+        state.defaultRate = dr.value.trim();
+        state.rows.forEach(function (r) {
+          if (r.customRate) return;
+          r.rate = state.defaultRate;
+          var el = rowEl(r.id), inp = el && el.querySelector('[data-f="rate"]');
+          if (inp && inp !== document.activeElement) inp.value = r.rate;
+          updateRow(r);
+        });
+        updateTotals(); renderPreview();
+        if (!singleCustomRate) { $('sRate').value = state.defaultRate; renderSingle(); saveSingle(); }
+        save();
+      }
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('dlg').classList.remove('show'); closeSummary(); } });
     window.addEventListener('beforeprint', function () { $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); });
@@ -920,6 +933,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
   // ---------- Single customer calculator ----------
   var SINGLE_KEY = 'chickenBilling.single.v1';
+  var singleCustomRate = false;
   var sF = { name: 'sName', pieces: 'sPieces', kg: 'sKgIn', rate: 'sRate' };
   function singleRow() { return { name: $('sName').value || 'x', pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value }; }
   function renderSingle() {
@@ -944,7 +958,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   }
   function saveSingle() {
     if (!storage) return;
-    try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value })); } catch (e) {}
+    try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate })); } catch (e) {}
   }
   function setMode(m) {
     document.body.classList.toggle('mode-single', m === 'single');
@@ -956,16 +970,18 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     var s = null; try { s = storage && JSON.parse(storage.getItem(SINGLE_KEY) || 'null'); } catch (e) {}
     $('sName').value = s ? s.name || '' : ''; $('sPieces').value = s ? s.pieces || '' : '';
     $('sKgIn').value = s ? s.kg || '' : ''; $('sRate').value = s ? s.rate || state.defaultRate : state.defaultRate;
-    Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { renderSingle(); saveSingle(); }); });
-    $('sClear').onclick = function () { $('sName').value = ''; $('sPieces').value = ''; $('sKgIn').value = ''; $('sRate').value = state.defaultRate; renderSingle(); saveSingle(); $('sPieces').focus(); };
+    singleCustomRate = !!(s && s.customRate);
+    Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { if (f === 'rate') singleCustomRate = $('sRate').value.trim() !== state.defaultRate; renderSingle(); saveSingle(); }); });
+    $('sClear').onclick = function () { $('sName').value = ''; $('sPieces').value = ''; $('sKgIn').value = ''; $('sRate').value = state.defaultRate; singleCustomRate = false; renderSingle(); saveSingle(); $('sPieces').focus(); };
     $('sPrint').onclick = function () { window.print(); };
     $('sToSheet').onclick = function () {
       var v = C.validateRow(singleRow());
       if (!v.ok) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
       if (state.rows.length >= MAX_ROWS) { toast('Maximum of ' + MAX_ROWS + ' rows per bill reached'); return; }
       var data = { name: $('sName').value.trim() || 'Customer', pieces: $('sPieces').value.trim(), kg: $('sKgIn').value.trim(), rate: $('sRate').value.trim() };
+      data.customRate = data.rate !== state.defaultRate;
       var blank = state.rows.filter(function (r) { return !r.name.trim() && !r.pieces && !r.kg; })[0];
-      if (blank) { FIELDS.forEach(function (f) { blank[f] = data[f]; }); } else { state.rows.push(newRow(data)); }
+      if (blank) { FIELDS.forEach(function (f) { blank[f] = data[f]; }); blank.customRate = data.customRate; } else { state.rows.push(newRow(data)); }
       renderAll(); save(); toast('Added ' + data.name + ' to the multiple sheet');
     };
     $('tabSingle').onclick = function () { setMode('single'); };
