@@ -246,6 +246,45 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .grand .n{font-size:20px}.grand .l .tag{display:none}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* ---------- Mode tabs + single calculator ---------- */
+.modes{display:inline-flex;gap:4px;padding:4px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin-bottom:12px}
+.mode{height:38px;padding:0 18px;border:0;border-radius:9px;background:transparent;font-weight:600;color:var(--ink-2);cursor:pointer}
+.mode.on{background:var(--green);color:#fff}
+.single{display:none;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start;max-width:980px}
+body.mode-single .single{display:grid}
+body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
+.s-in,.s-out{padding:18px}
+.s-in h3,.s-out h3{margin:0 0 14px;font-size:16px}
+.fld{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-size:13px;color:var(--ink-2);font-weight:550}
+.fld em{font-style:normal;color:var(--faint);font-weight:400}
+.fld input{height:46px;border:1px solid var(--line);border-radius:9px;padding:0 12px;font-size:17px;background:#fff;outline:none;width:100%}
+.fld input.n{text-align:right}
+.fld input:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(22,163,74,.15)}
+.fld input.err{border-color:var(--red);background:#FEF2F2}
+.fld3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.s-err{color:var(--red);font-size:13px;min-height:18px;margin:0 0 8px}
+.s-acts{display:flex;flex-wrap:wrap;gap:8px}
+.s-out .rc{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:14px}
+.s-out .rc small{display:block;color:var(--faint);font-size:12px}
+.s-out .val{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.s-out .big{border-bottom:0;padding-top:14px}
+.s-out .big .k{font-size:15px;font-weight:700}
+.s-out .big .val{font-size:30px;color:var(--green);font-weight:800}
+.s-out .words{color:var(--muted);font-size:13px;text-align:right}
+.s-out .empty{color:var(--muted)}
+@media (max-width:767px){
+  .modes{display:flex;width:100%}.mode{flex:1;padding:0 8px}
+  .single{grid-template-columns:1fr}
+  .fld3{grid-template-columns:1fr 1fr}.fld3 .fld:first-child{grid-column:1/-1}
+  .s-acts .btn{flex:1;min-height:44px;justify-content:center}
+}
+@media print{
+  .modes{display:none !important}
+  body.mode-single .s-in{display:none}
+  body.mode-single .single{display:block}
+  body.mode-single .s-out{border:0;box-shadow:none;max-width:420px}
+}
 </style>
 </head>
 <body>
@@ -264,6 +303,27 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
 <main class="wrap">
   <div class="notice" id="storageNotice">Auto-save isn't available in this preview window, so entries won't survive a refresh here. Download the offline app file and open it in Chrome to keep your bill saved on this device.</div>
 
+  <nav class="modes" role="tablist" aria-label="Calculator mode">
+    <button class="mode" role="tab" id="tabSingle" data-mode="single">Single Customer</button>
+    <button class="mode" role="tab" id="tabMulti" data-mode="multi">Multiple Customers</button>
+  </nav>
+
+  <section class="single" id="singleView" aria-label="Single customer calculator">
+    <div class="card s-in">
+      <h3>Single Customer Bill</h3>
+      <label class="fld"><span>Customer Name <em>(optional)</em></span><input id="sName" autocomplete="off" placeholder="e.g. Sharma Chicken Centre"></label>
+      <div class="fld3">
+        <label class="fld"><span>Pieces</span><input id="sPieces" class="n" inputmode="numeric" placeholder="0"></label>
+        <label class="fld"><span>Total KG</span><input id="sKgIn" class="n" inputmode="decimal" placeholder="0.000"></label>
+        <label class="fld"><span>Rate / KG (₹)</span><input id="sRate" class="n" inputmode="decimal" placeholder="90"></label>
+      </div>
+      <p class="s-err" id="sErr"></p>
+      <div class="s-acts"><button class="btn danger" id="sClear">Clear</button><button class="btn" id="sPrint">Print / Save PDF</button><button class="btn primary" id="sToSheet">Add to Multiple Sheet</button></div>
+    </div>
+    <div class="card s-out" id="sOut" aria-live="polite"></div>
+  </section>
+
+  <div id="multiView">
   <div class="print-head"><div><h2>Indian Chicken Shop — Wholesale Bill</h2><p>Sector 63, Noida</p></div><p id="printDate"></p></div>
 
   <section class="toolbar" aria-label="Actions">
@@ -328,6 +388,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
     <div class="card kpi"><div class="l">Total Labour Charge</div><div class="n" id="tLabour">₹0</div></div>
     <div class="card grand"><div class="l">Grand Total Payable <span class="tag">Payable</span></div><div class="n" id="tGrand">₹0</div><div class="w" id="tWords">Zero Rupees Only</div></div>
   </section>
+  </div>
 </main>
 
 <!-- Mobile: sticky grand total bar -->
@@ -857,6 +918,63 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
     window.addEventListener('beforeprint', function () { $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); });
   }
 
+  // ---------- Single customer calculator ----------
+  var SINGLE_KEY = 'chickenBilling.single.v1';
+  var sF = { name: 'sName', pieces: 'sPieces', kg: 'sKgIn', rate: 'sRate' };
+  function singleRow() { return { name: $('sName').value || 'x', pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value }; }
+  function renderSingle() {
+    var row = singleRow(), v = C.validateRow(row), out = $('sOut');
+    ['pieces', 'kg', 'rate'].forEach(function (f) { $(sF[f]).classList.toggle('err', !!v.errors[f]); });
+    $('sErr').textContent = Object.values(v.errors).join(' · ');
+    var nm = $('sName').value.trim();
+    var h = '<h3>Bill' + (nm ? ' · ' + esc(nm) : '') + '</h3>';
+    if (!v.ok) { out.innerHTML = h + '<p class="empty">Pieces, total KG and rate bharte hi bill yahan dikhega.</p>'; return; }
+    var r = C.calculate(v.pieces, v.grams, v.ratePaise);
+    var kg = C.formatKg(v.grams), rate = C.formatINR(v.ratePaise);
+    h += rc('Pieces', C.formatInt(v.pieces)) + rc('Total Weight', kg + ' kg') + rc('Rate', rate + ' / kg') +
+      rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
+      rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
+      rc('Original Labour<small>' + C.formatInt(v.pieces) + ' × ₹0.625</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
+      rc('Labour Adjustment<small>to round final to ₹10</small>', '+ ' + C.formatINR(r.adjustment, { decimals: 2 })) +
+      rc('Labour Charge', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
+      '<div class="rc big"><span class="k">Final Amount</span><span class="val" id="sFinal">' + (r.final == null ? '—' : C.formatINR(r.final)) + '</span></div>' +
+      (r.final != null ? '<div class="words">' + esc(C.amountInWords(r.final)) + '</div>' : '') +
+      (r.warning ? '<div class="warn">' + esc(r.warning) + '</div>' : '');
+    out.innerHTML = h;
+  }
+  function saveSingle() {
+    if (!storage) return;
+    try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value })); } catch (e) {}
+  }
+  function setMode(m) {
+    document.body.classList.toggle('mode-single', m === 'single');
+    $('tabSingle').classList.toggle('on', m === 'single'); $('tabMulti').classList.toggle('on', m !== 'single');
+    $('tabSingle').setAttribute('aria-selected', m === 'single'); $('tabMulti').setAttribute('aria-selected', m !== 'single');
+    if (storage) try { storage.setItem('chickenBilling.mode', m); } catch (e) {}
+  }
+  function initSingle() {
+    var s = null; try { s = storage && JSON.parse(storage.getItem(SINGLE_KEY) || 'null'); } catch (e) {}
+    $('sName').value = s ? s.name || '' : ''; $('sPieces').value = s ? s.pieces || '' : '';
+    $('sKgIn').value = s ? s.kg || '' : ''; $('sRate').value = s ? s.rate || state.defaultRate : state.defaultRate;
+    Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { renderSingle(); saveSingle(); }); });
+    $('sClear').onclick = function () { $('sName').value = ''; $('sPieces').value = ''; $('sKgIn').value = ''; $('sRate').value = state.defaultRate; renderSingle(); saveSingle(); $('sPieces').focus(); };
+    $('sPrint').onclick = function () { window.print(); };
+    $('sToSheet').onclick = function () {
+      var v = C.validateRow(singleRow());
+      if (!v.ok) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
+      if (state.rows.length >= MAX_ROWS) { toast('Maximum of ' + MAX_ROWS + ' rows per bill reached'); return; }
+      var data = { name: $('sName').value.trim() || 'Customer', pieces: $('sPieces').value.trim(), kg: $('sKgIn').value.trim(), rate: $('sRate').value.trim() };
+      var blank = state.rows.filter(function (r) { return !r.name.trim() && !r.pieces && !r.kg; })[0];
+      if (blank) { FIELDS.forEach(function (f) { blank[f] = data[f]; }); } else { state.rows.push(newRow(data)); }
+      renderAll(); save(); toast('Added ' + data.name + ' to the multiple sheet');
+    };
+    $('tabSingle').onclick = function () { setMode('single'); };
+    $('tabMulti').onclick = function () { setMode('multi'); };
+    var m = null; try { m = storage && storage.getItem('chickenBilling.mode'); } catch (e) {}
+    setMode(m || 'single');
+    renderSingle();
+  }
+
   // ---------- Init ----------
   function init() {
     $('todayChip').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
@@ -873,13 +991,13 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
     $('defaultRate').value = state.defaultRate;
     $('sheetNo').textContent = '#' + state.sheetNo;
     state.selectedId = state.rows[0] && state.rows[0].id;
-    bind(); renderAll();
+    bind(); renderAll(); initSingle();
     if (!saved && storage) { save(); toast('Sample bill loaded. Use Clear All to start a fresh bill.'); }
   }
   init();
 
   // Expose for automated testing only
-  window.__billing = { state: state, addRows: addRows, deleteRow: deleteRow, clearAll: clearAll, exportRows: exportRows };
+  window.__billing = { setMode: setMode, renderSingle: renderSingle, state: state, addRows: addRows, deleteRow: deleteRow, clearAll: clearAll, exportRows: exportRows };
 })();
 </script>
 </body>
