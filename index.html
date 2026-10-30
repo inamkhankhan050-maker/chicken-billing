@@ -347,6 +347,9 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
 .del{width:28px;height:28px}
 @media (min-width:1700px){.body .r > .c,.cell-in{font-size:15px}.r > .c{padding:0 9px}}
+
+.btn.wa{background:#25D366;border-color:#1EB457;color:#fff}.btn.wa:hover{background:#1EB457}
+.s-acts{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -387,7 +390,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
         <label class="fld"><span>Rec Online</span><input id="sOnline" class="n" inputmode="decimal" placeholder="0"></label>
       </div>
       <p class="s-err" id="sErr"></p>
-      <div class="s-acts"><button class="btn danger" id="sClear">Clear</button><button class="btn" id="sPrint">Print / Save PDF</button><button class="btn primary" id="sToSheet">Add to Multiple Sheet</button></div>
+      <div class="s-acts"><button class="btn danger" id="sClear">Clear</button><button class="btn" id="sPrint">Print / Save PDF</button><button class="btn wa" id="sShare"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button><button class="btn primary" id="sToSheet">Add to Multiple Sheet</button></div>
     </div>
     <div class="card s-out" id="sOut" aria-live="polite"></div>
   </section>
@@ -1179,6 +1182,112 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     $('sReceipt').innerHTML = h;
     return true;
   }
+
+  // ---------- Receipt as PDF (canvas image inside a one-page PDF, works offline) ----------
+  function receiptModel() {
+    var row = singleRow(), v = C.validateRow(row);
+    if (!v.ok) return null;
+    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = C.ledger(row, r.final);
+    var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
+    var m = { firm: $('sFirm').value.trim(), name: $('sName').value.trim() || 'Customer',
+      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), boxes: [], rows: [], led: [], final: r.final };
+    m.boxes.push(['PIECES', C.formatInt(v.pieces)], ['TOTAL KG', C.formatKg(v.grams)]);
+    if (v.jaalGrams) m.boxes.push(['JAAL KG', '− ' + C.formatKg(v.jaalGrams)], ['NET KG', C.formatKg(v.netGrams)]);
+    m.boxes.push(['AVERAGE', C.averageKg(v.netGrams, v.pieces) + ' kg'], ['RATE / KG', C.formatINR(v.ratePaise)]);
+    m.rows.push(['Basic Amount', C.formatKg(v.netGrams) + ' kg × ' + C.formatINR(v.ratePaise), C.formatINR(r.basic)]);
+    m.rows.push(['Samiti', '1%', C.formatINR(r.samiti)]);
+    m.rows.push(['Labour', C.formatInt(v.pieces) + ' × ₹0.625 + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }), C.formatINR(r.labourAdjusted, { decimals: 2 })]);
+    m.billText = r.final == null ? '—' : C.formatINR(r.final);
+    if (L.any && L.ok) {
+      m.led = [['Pichla Balance (B)', '+ ' + m2(L.oldBal)], ['Total Due', m2(L.due + L.received), 1], ['Rec Cash', '− ' + m2(L.cash)], ['Rec Online', '− ' + m2(L.online)]];
+      m.balText = dueText(L.due); m.balPaise = L.due;
+    }
+    m.words = r.final == null ? '' : C.amountInWords(L.any && L.ok ? Math.max(L.due, 0) : r.final);
+    return m;
+  }
+  function receiptCanvas(m) {
+    var W = 1000, S = 2, P = 50, F = '"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif';
+    var H = 330 + Math.ceil(m.boxes.length / 3) * 92 + m.rows.length * 52 + 80 + (m.led.length ? m.led.length * 46 + 80 : 0) + 140;
+    var cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S;
+    var g = cv.getContext('2d'); g.scale(S, S);
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+    var txt = function (t, x, y, size, color, weight, align) { g.font = (weight || 400) + ' ' + size + 'px ' + F; g.fillStyle = color || '#111'; g.textAlign = align || 'left'; g.fillText(t, x, y); };
+    var line = function (y, color, w) { g.fillStyle = color || '#E3E3E3'; g.fillRect(P, y, W - 2 * P, w || 1); };
+    var y = 80;
+    txt('Ghazipur Murga Mandi', P, y, 40, '#166534', 700);
+    txt(m.date, W - P, y, 22, '#444', 400, 'right');
+    if (m.firm) { y += 40; txt(m.firm, P, y, 28, '#111', 700); }
+    y += 30; txt('WHOLESALE BILL', P, y, 18, '#666', 600);
+    y += 18; line(y, '#166534', 4);
+    y += 56; txt(m.name, P, y, 32, '#111', 700);
+    y += 22;
+    var bw = (W - 2 * P - 2 * 16) / 3;
+    m.boxes.forEach(function (b, i) {
+      var cx = P + (i % 3) * (bw + 16), cy = y + Math.floor(i / 3) * 92;
+      g.strokeStyle = '#CFCFCF'; g.lineWidth = 1.5; g.strokeRect(cx, cy, bw, 76);
+      txt(b[0], cx + 16, cy + 28, 16, '#666', 600); txt(b[1], cx + 16, cy + 62, 28, '#111', 700);
+    });
+    y += Math.ceil(m.boxes.length / 3) * 92 + 10;
+    m.rows.forEach(function (r) {
+      y += 40; g.font = '400 24px ' + F; var w0 = g.measureText(r[0]).width;
+      txt(r[0], P + 4, y, 24, '#222'); txt(r[1], P + 4 + w0 + 14, y, 17, '#777');
+      txt(r[2], W - P - 4, y, 24, '#111', 600, 'right'); y += 12; line(y);
+    });
+    line(y, '#166534', 3);
+    y += 50; txt('Aaj ka Bill', P + 4, y, 30, '#166534', 700); txt(m.billText, W - P - 4, y, 32, '#166534', 700, 'right');
+    y += 16;
+    if (m.led.length) {
+      y += 14;
+      m.led.forEach(function (r) { y += 36; txt(r[0], P + 4, y, 22, '#222', r[2] ? 700 : 400); txt(r[1], W - P - 4, y, 22, '#111', r[2] ? 700 : 500, 'right'); y += 10; line(y); });
+      line(y, '#9A3412', 3);
+      y += 50; var bc = m.balPaise < 0 ? '#166534' : '#9A3412';
+      txt('Balance Baaki', P + 4, y, 30, bc, 700); txt(m.balText, W - P - 4, y, 32, bc, 700, 'right'); y += 16;
+    }
+    if (m.words) { y += 40; txt(m.words, W - P - 4, y, 20, '#444', 400, 'right'); }
+    y += 30; g.strokeStyle = '#999'; g.setLineDash([6, 5]); g.beginPath(); g.moveTo(P, y); g.lineTo(W - P, y); g.stroke(); g.setLineDash([]);
+    y += 34; txt('Dhanyavaad · ' + (m.firm ? m.firm + ', ' : '') + 'Ghazipur Murga Mandi', W / 2, y, 18, '#666', 400, 'center');
+    return cv;
+  }
+  function jpegPdf(dataUrl, pw, ph) {
+    var bin = atob(dataUrl.split(',')[1]), img = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) img[i] = bin.charCodeAt(i);
+    var PW = 595.28, PH = Math.round(PW * ph / pw * 100) / 100;
+    var content = 'q ' + PW + ' 0 0 ' + PH + ' 0 0 cm /Im0 Do Q';
+    var parts = [], off = [], len = 0;
+    var add = function (x) { if (typeof x === 'string') { var b = new Uint8Array(x.length); for (var j = 0; j < x.length; j++) b[j] = x.charCodeAt(j) & 255; x = b; } parts.push(x); len += x.length; };
+    add('%PDF-1.4\n');
+    var obj = function (n, body) { off[n] = len; add(n + ' 0 obj\n'); body(); add('\nendobj\n'); };
+    obj(1, function () { add('<< /Type /Catalog /Pages 2 0 R >>'); });
+    obj(2, function () { add('<< /Type /Pages /Kids [3 0 R] /Count 1 >>'); });
+    obj(3, function () { add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + PW + ' ' + PH + '] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>'); });
+    obj(4, function () { add('<< /Type /XObject /Subtype /Image /Width ' + pw + ' /Height ' + ph + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + img.length + ' >>\nstream\n'); add(img); add('\nendstream'); });
+    obj(5, function () { add('<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream'); });
+    var xref = len, x = 'xref\n0 6\n0000000000 65535 f \n';
+    for (var k = 1; k <= 5; k++) x += ('0000000000' + off[k]).slice(-10) + ' 00000 n \n';
+    add(x + 'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+    return new Blob(parts, { type: 'application/pdf' });
+  }
+  function shareReceipt() {
+    var m = receiptModel();
+    if (!m) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
+    var cv = receiptCanvas(m), blob = jpegPdf(cv.toDataURL('image/jpeg', 0.92), cv.width, cv.height);
+    var fname = ('Bill ' + m.name + ' ' + m.date).replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-') + '.pdf';
+    var msg = (m.firm ? m.firm + ' · ' : '') + 'Ghazipur Murga Mandi\n' + m.name + ' · ' + m.date + '\nAaj ka Bill: ' + m.billText + (m.balText ? '\nBalance Baaki: ' + m.balText : '');
+    var file = null; try { file = new File([blob], fname, { type: 'application/pdf' }); } catch (e) {}
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: fname, text: msg }).catch(function (e) { if (e && e.name !== 'AbortError') fallback(); });
+      return;
+    }
+    fallback();
+    function fallback() {
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 60000);
+      try { window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank'); } catch (e) {}
+      toast('PDF download ho gayi. WhatsApp mein 📎 se attach karke bhejiye');
+    }
+  }
+  window.__cbReceipt = { model: receiptModel, pdf: jpegPdf };
   function saveSingle() {
     if (!storage) return;
     try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate, jaal: $('sJaal').value, customJaal: singleCustomJaal, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value })); } catch (e) {}
@@ -1211,6 +1320,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       try { window.print(); } catch (e) { toast('Printing is blocked in this window.'); }
       setTimeout(function () { if (!window.matchMedia || !window.matchMedia('print').matches) done(); }, 1500);
     };
+    $('sShare').onclick = shareReceipt;
     $('sToSheet').onclick = function () {
       var v = C.validateRow(singleRow());
       if (!v.ok) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
