@@ -325,6 +325,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   body.print-rcpt .rcpt{display:block;max-width:150mm;margin:0 auto;color:#111;font-family:inherit}
   .rcpt .rh{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #166534;padding-bottom:6px}
   .rcpt .rh b{display:block;font-size:20px;color:#166534}
+  .rcpt .rh i{display:block;font-style:normal;font-size:15px;font-weight:700;color:#111;margin:1px 0 2px}
   .rcpt .rh span{font-size:12px;color:#555;letter-spacing:.05em;text-transform:uppercase}
   .rcpt .rd{font-size:13px;color:#333}
   .rcpt .rn{font-size:18px;font-weight:700;margin:10px 0 8px}
@@ -372,6 +373,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
   <section class="single" id="singleView" aria-label="Single customer calculator">
     <div class="card s-in">
       <h3>Single Customer Bill</h3>
+      <label class="fld"><span>Firm / Dukaan Name <em>(print par Ghazipur Murga Mandi ke niche)</em></span><input id="sFirm" autocomplete="off" placeholder="e.g. Haji Traders, Shop No. 12"></label>
       <label class="fld"><span>Customer Name <em>(optional)</em></span><input id="sName" autocomplete="off" placeholder="e.g. Sharma Chicken Centre"></label>
       <div class="fld3">
         <label class="fld"><span>Pieces</span><input id="sPieces" class="n" inputmode="numeric" placeholder="0"></label>
@@ -1145,10 +1147,10 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     if (!v.ok) return false;
     var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = C.ledger(row, r.final);
     var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
-    var nm = $('sName').value.trim();
+    var nm = $('sName').value.trim(), firm = $('sFirm').value.trim();
     var d = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     var t = function (k, val, cls) { return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + k + '</td><td>' + val + '</td></tr>'; };
-    var h = '<div class="rh"><div><b>Ghazipur Murga Mandi</b><span>Wholesale Bill</span></div><div class="rd">' + d + '</div></div>' +
+    var h = '<div class="rh"><div><b>Ghazipur Murga Mandi</b>' + (firm ? '<i>' + esc(firm) + '</i>' : '') + '<span>Wholesale Bill</span></div><div class="rd">' + d + '</div></div>' +
       '<div class="rn">' + (nm ? esc(nm) : 'Customer') + '</div>' +
       '<div class="rq">' +
         '<div><span>Pieces</span><b>' + C.formatInt(v.pieces) + '</b></div>' +
@@ -1173,7 +1175,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       '</table>';
     }
     if (r.final != null) h += '<div class="rw">' + esc(C.amountInWords(L.any && L.ok ? Math.max(L.due, 0) : r.final)) + '</div>';
-    h += '<div class="rf">Dhanyavaad · Ghazipur Murga Mandi</div>';
+    h += '<div class="rf">Dhanyavaad · ' + (firm ? esc(firm) + ', ' : '') + 'Ghazipur Murga Mandi</div>';
     $('sReceipt').innerHTML = h;
     return true;
   }
@@ -1191,6 +1193,8 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     var s = null; try { s = storage && JSON.parse(storage.getItem(SINGLE_KEY) || 'null'); } catch (e) {}
     $('sName').value = s ? s.name || '' : ''; $('sPieces').value = s ? s.pieces || '' : '';
     $('sKgIn').value = s ? s.kg || '' : ''; $('sRate').value = s ? s.rate || state.defaultRate : state.defaultRate;
+    try { $('sFirm').value = (storage && storage.getItem('chickenBilling.firm')) || ''; } catch (e) {}
+    $('sFirm').addEventListener('input', function () { if (storage) try { storage.setItem('chickenBilling.firm', $('sFirm').value); } catch (e) {} });
     singleCustomRate = !!(s && s.customRate);
     singleCustomJaal = !!(s && s.customJaal);
     $('sJaal').value = s && s.jaal != null ? s.jaal : state.defaultJaal;
