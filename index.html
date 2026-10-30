@@ -314,6 +314,33 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 .due-k .n{color:#9A3412}
 .kpi .w2{font-size:12px;color:var(--muted);margin-top:2px}
 .fld3.led{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:10px}
+
+/* ---------- Single receipt (print) ---------- */
+.rcpt{display:none}
+@media print{
+  body.print-rcpt > *:not(.rcpt){display:none !important}
+  body.print-rcpt{background:#fff;padding:0;font-size:13px}
+  body.print-rcpt .rcpt{display:block;max-width:150mm;margin:0 auto;color:#111;font-family:inherit}
+  .rcpt .rh{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #166534;padding-bottom:6px}
+  .rcpt .rh b{display:block;font-size:20px;color:#166534}
+  .rcpt .rh span{font-size:12px;color:#555;letter-spacing:.05em;text-transform:uppercase}
+  .rcpt .rd{font-size:13px;color:#333}
+  .rcpt .rn{font-size:18px;font-weight:700;margin:10px 0 8px}
+  .rcpt .rq{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+  .rcpt .rq div{border:1px solid #ccc;border-radius:6px;padding:5px 8px}
+  .rcpt .rq span{display:block;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.04em}
+  .rcpt .rq b{font-size:16px;font-variant-numeric:tabular-nums}
+  .rcpt .rt{width:100%;border-collapse:collapse;margin-bottom:8px}
+  .rcpt .rt td{padding:6px 2px;border-bottom:1px solid #ddd;font-size:14px}
+  .rcpt .rt td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .rcpt .rt small{color:#666;font-size:11px;margin-left:4px}
+  .rcpt .rt tr.sub td{font-weight:700}
+  .rcpt .rt tr.tot td{border-top:2px solid #166534;border-bottom:0;font-size:18px;font-weight:800;color:#166534;padding-top:8px}
+  .rcpt .rt tr.due td{color:#9A3412;border-top-color:#9A3412}
+  .rcpt .led{margin-top:4px}
+  .rcpt .rw{text-align:right;font-size:12px;color:#444;font-style:italic;margin-top:2px}
+  .rcpt .rf{margin-top:14px;padding-top:6px;border-top:1px dashed #aaa;text-align:center;font-size:11px;color:#666}
+}
 </style>
 </head>
 <body>
@@ -465,6 +492,7 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
 
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear all customers?</h4><p id="dlgP">This removes every entry from this bill. It can't be undone.</p><div class="acts"><button class="btn" id="dlgNo">Cancel</button><button class="btn danger-fill" id="dlgYes">Clear All</button></div></div></div>
 <div class="toast" id="toast"></div>
+<div class="rcpt" id="sReceipt" aria-hidden="true"></div>
 
 <script>/* ============================================================
    Billing calculation engine — pure functions, no DOM.
@@ -1107,6 +1135,43 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
       ledgerHTML(C.ledger(row, r.final));
     out.innerHTML = h;
   }
+  function buildReceipt() {
+    var row = singleRow(), v = C.validateRow(row);
+    if (!v.ok) return false;
+    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = C.ledger(row, r.final);
+    var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
+    var nm = $('sName').value.trim();
+    var d = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    var t = function (k, val, cls) { return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + k + '</td><td>' + val + '</td></tr>'; };
+    var h = '<div class="rh"><div><b>Ghazipur Murga Mandi</b><span>Wholesale Bill</span></div><div class="rd">' + d + '</div></div>' +
+      '<div class="rn">' + (nm ? esc(nm) : 'Customer') + '</div>' +
+      '<div class="rq">' +
+        '<div><span>Pieces</span><b>' + C.formatInt(v.pieces) + '</b></div>' +
+        '<div><span>Total KG</span><b>' + C.formatKg(v.grams) + '</b></div>' +
+        (v.jaalGrams ? '<div><span>Jaal KG</span><b>− ' + C.formatKg(v.jaalGrams) + '</b></div><div><span>Net KG</span><b>' + C.formatKg(v.netGrams) + '</b></div>' : '') +
+        '<div><span>Average</span><b>' + C.averageKg(v.netGrams, v.pieces) + ' kg</b></div>' +
+        '<div><span>Rate / KG</span><b>' + C.formatINR(v.ratePaise) + '</b></div>' +
+      '</div>' +
+      '<table class="rt">' +
+        t('Basic Amount <small>' + C.formatKg(v.netGrams) + ' kg × ' + C.formatINR(v.ratePaise) + '</small>', C.formatINR(r.basic)) +
+        t('Samiti <small>1%</small>', C.formatINR(r.samiti)) +
+        t('Labour <small>' + C.formatInt(v.pieces) + ' × ₹0.625 + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }) + '</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
+        t('Aaj ka Bill', r.final == null ? '—' : C.formatINR(r.final), 'tot') +
+      '</table>';
+    if (L.any && L.ok) {
+      h += '<table class="rt led">' +
+        t('Pichla Balance (B)', '+ ' + m2(L.oldBal)) +
+        t('Total Due', m2(L.due + L.received), 'sub') +
+        t('Rec Cash', '− ' + m2(L.cash)) +
+        t('Rec Online', '− ' + m2(L.online)) +
+        t('Balance Baaki', dueText(L.due), 'tot due') +
+      '</table>';
+    }
+    if (r.final != null) h += '<div class="rw">' + esc(C.amountInWords(L.any && L.ok ? Math.max(L.due, 0) : r.final)) + '</div>';
+    h += '<div class="rf">Dhanyavaad · Ghazipur Murga Mandi</div>';
+    $('sReceipt').innerHTML = h;
+    return true;
+  }
   function saveSingle() {
     if (!storage) return;
     try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate, jaal: $('sJaal').value, customJaal: singleCustomJaal, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value })); } catch (e) {}
@@ -1127,7 +1192,16 @@ body.mode-single #multiView,body.mode-single .m-bar{display:none !important}
     $('sOld').value = s ? s.oldBal || '' : ''; $('sCash').value = s ? s.cash || '' : ''; $('sOnline').value = s ? s.online || '' : '';
     Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { if (f === 'rate') singleCustomRate = $('sRate').value.trim() !== state.defaultRate; if (f === 'jaal') singleCustomJaal = $('sJaal').value.trim() !== state.defaultJaal; renderSingle(); saveSingle(); }); });
     $('sClear').onclick = function () { $('sName').value = ''; $('sPieces').value = ''; $('sKgIn').value = ''; $('sRate').value = state.defaultRate; singleCustomRate = false; $('sJaal').value = state.defaultJaal; singleCustomJaal = false; $('sOld').value = ''; $('sCash').value = ''; $('sOnline').value = ''; renderSingle(); saveSingle(); $('sPieces').focus(); };
-    $('sPrint').onclick = function () { window.print(); };
+    $('sPrint').onclick = function () {
+      if (!buildReceipt()) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
+      var st = document.createElement('style'); st.id = 'pgSingle';
+      st.textContent = '@page{size:A4 portrait;margin:12mm}';
+      document.head.appendChild(st); document.body.classList.add('print-rcpt');
+      var done = function () { document.body.classList.remove('print-rcpt'); var x = $('pgSingle'); if (x) x.remove(); window.removeEventListener('afterprint', done); };
+      window.addEventListener('afterprint', done);
+      try { window.print(); } catch (e) { toast('Printing is blocked in this window.'); }
+      setTimeout(function () { if (!window.matchMedia || !window.matchMedia('print').matches) done(); }, 1500);
+    };
     $('sToSheet').onclick = function () {
       var v = C.validateRow(singleRow());
       if (!v.ok) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
