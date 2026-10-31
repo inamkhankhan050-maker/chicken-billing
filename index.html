@@ -1396,7 +1396,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
   function jpegPdf(dataUrl, pw, ph) {
     var bin = atob(dataUrl.split(',')[1]), img = new Uint8Array(bin.length);
     for (var i = 0; i < bin.length; i++) img[i] = bin.charCodeAt(i);
-    var PW = 595.28, PH = Math.round(PW * ph / pw * 100) / 100;
+    var PW = Math.max(595.28, Math.round(pw / 2 * 0.46)), PH = Math.round(PW * ph / pw * 100) / 100;
     var content = 'q ' + PW + ' 0 0 ' + PH + ' 0 0 cm /Im0 Do Q';
     var parts = [], off = [], len = 0;
     var add = function (x) { if (typeof x === 'string') { var b = new Uint8Array(x.length); for (var j = 0; j < x.length; j++) b[j] = x.charCodeAt(j) & 255; x = b; } parts.push(x); len += x.length; };
@@ -1465,7 +1465,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     });
     if (spec.sum) {
       y += 24;
-      spec.sum.forEach(function (sm) { y += 40; var big = sm[3]; txt(sm[0], W - P - 360, y, big ? 28 : 22, sm[2] || '#222', big ? 700 : 500, 'right'); txt(sm[1], W - P, y, big ? 30 : 22, sm[2] || '#111', 700, 'right'); y += 6; });
+      spec.sum.forEach(function (sm) { y += 40; var big = sm[3]; txt(sm[0], W - P - 260, y, big ? 28 : 22, sm[2] || '#222', big ? 700 : 500, 'right'); txt(sm[1], W - P, y, big ? 30 : 22, sm[2] || '#111', 700, 'right'); y += 6; });
     }
     y += 50; txt('Dhanyavaad · ' + (spec.sub ? spec.sub + ', ' : '') + 'Ghazipur Murga Mandi', W / 2, y, 17, '#777', 400, 'center');
     return cv;
@@ -1476,14 +1476,20 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     var d = exportRows(); if (!d.count) return null;
     var M = function (v) { return v === '' ? '' : C.formatINR(Math.round(parseFloat(v) * 100), { decimals: Math.round(parseFloat(v) * 100) % 100 ? 2 : 0 }); };
     var B = function (v) { return v === '' ? '' : dueText(Math.round(parseFloat(v) * 100)); };
+    var K = function (v) { return v === '' ? '' : v; };
     var map = function (r, tot) {
-      var rec = r[15] === '' && r[16] === '' ? '' : String((parseFloat(r[15] || 0) + parseFloat(r[16] || 0)).toFixed(2));
-      return [tot ? '' : r[0], tot ? 'TOTAL' : r[1], r[2] === '' ? '' : C.formatInt(+r[2]), r[5] === '' ? '' : r[5], tot ? '' : (r[7] === '' ? '' : M(r[7])), M(r[13]), M(r[14]), M(rec), B(r[17])];
+      return [tot ? '' : r[0], tot ? 'TOTAL' : r[1], r[2] === '' ? '' : C.formatInt(+r[2]), K(r[3]), r[4] === '' || +r[4] === 0 ? (tot ? '0' : '—') : r[4], K(r[5]),
+        tot ? '' : (r[7] === '' ? '' : M(r[7])), M(r[8]), M(r[9]), M(r[12]), M(r[13]), M(r[14]), M(r[15]), M(r[16]), B(r[17])];
     };
     var rows = d.rows.map(function (r) { return map(r); }); rows.push(map(d.total, true));
+    var T = d.total, rec = String((parseFloat(T[15] || 0) + parseFloat(T[16] || 0)).toFixed(2));
     return { title: 'Wholesale Bill · ' + d.count + ' customers', sub: firmName(), date: todayText(),
-      cols: [{ h: '#', w: 50 }, { h: 'Customer', w: 300, b: 1 }, { h: 'Pcs', w: 80, r: 1 }, { h: 'Net KG', w: 110, r: 1 }, { h: 'Rate', w: 90, r: 1 }, { h: 'Aaj ka Bill', w: 160, r: 1, b: 1, color: '#166534' }, { h: 'Pichla Bal', w: 150, r: 1 }, { h: 'Received', w: 150, r: 1 }, { h: 'Balance Baaki', w: 170, r: 1, b: 1, color: '#9A3412' }],
-      rows: rows, bold: [rows.length - 1], sum: [['Grand Total', M(d.total[13]), '#166534', 1], ['Balance Baaki', B(d.total[17]), '#9A3412', 1]] };
+      cols: [{ h: '#', w: 44 }, { h: 'Customer', w: 230, b: 1 }, { h: 'Pcs', w: 70, r: 1 }, { h: 'Total KG', w: 105, r: 1 }, { h: 'Jaal', w: 75, r: 1 }, { h: 'Net KG', w: 105, r: 1 }, { h: 'Rate', w: 70, r: 1 },
+        { h: 'Basic', w: 125, r: 1 }, { h: 'Samiti', w: 95, r: 1 }, { h: 'Labour', w: 100, r: 1 }, { h: 'Aaj ka Bill', w: 135, r: 1, b: 1, color: '#166534' },
+        { h: 'Pichla Bal', w: 125, r: 1 }, { h: 'Rec Cash', w: 115, r: 1 }, { h: 'Rec Online', w: 115, r: 1 }, { h: 'Balance', w: 140, r: 1, b: 1, color: '#9A3412' }],
+      rows: rows, bold: [rows.length - 1],
+      sum: [['Basic Amount', M(T[8])], ['Samiti Charge (1%)', M(T[9])], ['Labour Charge', M(T[12])], ['Grand Total (Aaj ka Bill)', M(T[13]), '#166534', 1],
+        ['Pichla Balance', M(T[14])], ['Received (Cash ' + M(T[15]) + ' + Online ' + M(T[16]) + ')', M(rec)], ['Balance Baaki', B(T[17]), '#9A3412', 1]] };
   }
   function shareMulti() {
     var sp = multiSpec(); if (!sp) { toast('Pehle kam se kam ek customer ka bill bhariye'); return; }
