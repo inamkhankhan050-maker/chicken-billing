@@ -407,17 +407,27 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
 @media (max-width:1100px){.s-out .sq{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:900px){.s-out .s2{grid-template-columns:1fr}.s-out .s2b{border-left:0;padding-left:0;border-top:1px solid var(--line);margin-top:8px}}
 
-/* + − × ÷ bar for number boxes */
-.calc-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+/* + − × ÷ bar / keypad for number boxes */
+.calc-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;background:#EEF2F0;border-top:1px solid var(--line);box-shadow:0 -6px 18px rgba(0,0,0,.12);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
 .calc-bar.show{display:block}
-.cb-res{font-size:13px;color:var(--muted);text-align:right;padding:0 4px 5px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.calc-bar.has .cb-res{color:var(--accent,#15803D);font-weight:700;font-size:15px}
+.cb-top{display:flex;align-items:baseline;gap:8px;padding:2px 6px 6px}
+.cb-lbl{font-size:12px;font-weight:700;color:#14532D;white-space:nowrap}
+.cb-res{flex:1;font-size:14px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl}
+.calc-bar.has .cb-res{color:#15803D;font-weight:800;font-size:17px}
 .cb-keys{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:520px;margin-left:auto}
-.cb-keys button{height:42px;border:1px solid var(--line);border-radius:8px;background:#F3F6F4;font-size:22px;font-weight:700;color:#14532D;cursor:pointer}
-.cb-keys .cb-eq{background:#15803D;color:#fff;border-color:#15803D}
-.cb-keys .cb-del{font-size:18px;color:#9A3412}
+.cb-keys.pad{grid-template-columns:repeat(5,1fr);max-width:560px;margin:0 auto}
+.cb-keys button{height:42px;border:0;border-radius:10px;background:#fff;font-size:22px;font-weight:600;color:#111827;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.12);touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.cb-keys.pad button{height:50px;font-size:24px}
+.cb-keys button:active{background:#D1FAE5}
+.cb-keys .op{background:#DCFCE7;color:#15803D;font-size:26px;font-weight:800}
+.cb-keys .cb-eq{background:#15803D;color:#fff}
+.cb-keys .cb-del{font-size:20px;color:#9A3412;background:#FFF1E8}
+.cb-keys .cb-clr{font-size:18px;color:#B91C1C;background:#FEE2E2}
+.cb-keys .cb-next,.cb-keys .cb-done{font-size:15px;font-weight:700;background:#E5E7EB}
+.cb-keys .cb-done{background:#14532D;color:#fff}
 @media print{.calc-bar{display:none!important}}
 body.calc-on{padding-bottom:110px}
+body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 </style>
 </head>
 <body>
@@ -1666,21 +1676,35 @@ body.calc-on{padding-bottom:110px}
     bind(); renderAll(); initSingle(); initCalcBar();
     if (!saved && storage) { save(); toast('Sample bill loaded. Use Clear All to start a fresh bill.'); }
   }
-  /* ---- + − × ÷ calculator inside number boxes ---- */
-  function isNumIn(el) { return el && el.tagName === 'INPUT' && /^(decimal|numeric)$/.test(el.getAttribute('inputmode') || ''); }
+  /* ---- Number keypad with + − × ÷ (replaces phone keyboard on touch screens) ---- */
+  function imOf(el) { return el.getAttribute('data-im') || el.getAttribute('inputmode') || ''; }
+  function isNumIn(el) { return el && el.tagName === 'INPUT' && /^(decimal|numeric)$/.test(imOf(el)); }
+  var touchPad = false;
   function initCalcBar() {
-    var bar = document.createElement('div'); bar.id = 'calcBar'; bar.className = 'calc-bar';
-    bar.innerHTML = '<div class="cb-res" id="cbRes"></div><div class="cb-keys">' +
-      ['+', '−', '×', '÷'].map(function (o) { return '<button type="button" data-op="' + o + '">' + o + '</button>'; }).join('') +
-      '<button type="button" data-op="⌫" class="cb-del">⌫</button><button type="button" data-op="=" class="cb-eq">=</button></div>';
+    try { touchPad = window.matchMedia && window.matchMedia('(pointer: coarse)').matches; } catch (e) {}
+    var bar = document.createElement('div'); bar.id = 'calcBar'; bar.className = 'calc-bar' + (touchPad ? ' pad' : '');
+    var K = function (k, cls, lbl) { return '<button type="button" data-op="' + k + '"' + (cls ? ' class="' + cls + '"' : '') + '>' + (lbl || k) + '</button>'; };
+    bar.innerHTML = '<div class="cb-top"><span class="cb-lbl" id="cbLbl"></span><span class="cb-res" id="cbRes"></span></div>' +
+      (touchPad
+        ? '<div class="cb-keys pad">' +
+          K('7') + K('8') + K('9') + K('÷', 'op') + K('⌫', 'cb-del') +
+          K('4') + K('5') + K('6') + K('×', 'op') + K('C', 'cb-clr') +
+          K('1') + K('2') + K('3') + K('−', 'op') + K('next', 'cb-next', 'Next ›') +
+          K('.') + K('0') + K('=', 'cb-eq') + K('+', 'op') + K('done', 'cb-done', 'Done') + '</div>'
+        : '<div class="cb-keys">' + K('+', 'op') + K('−', 'op') + K('×', 'op') + K('÷', 'op') + K('⌫', 'cb-del') + K('=', 'cb-eq') + '</div>');
     document.body.appendChild(bar);
     var cur = null;
-    function places(el) { return el.getAttribute('inputmode') === 'numeric' ? 0 : (/rate|cash|online|old|amt|Rate|Cash|Online|Old/.test((el.id || '') + (el.dataset.f || '')) ? 2 : 3); }
+    function places(el) { return imOf(el) === 'numeric' ? 0 : (/rate|cash|online|old|amt/i.test((el.id || '') + (el.dataset.f || '')) ? 2 : 3); }
     function fire(el) { el.dispatchEvent(new Event('input', { bubbles: true })); }
+    function label(el) {
+      var l = el.closest('label'); if (l && l.querySelector('span')) return l.querySelector('span').textContent;
+      return el.getAttribute('aria-label') || el.placeholder || '';
+    }
     function show() {
       if (!cur) return;
-      var v = cur.value, r = C.hasExpr(v) ? C.evalExpr(v, places(cur)) : null;
-      $('cbRes').textContent = r === null ? (C.hasExpr(v) ? v + ' = ?' : 'Jodne ke liye + dabao: 50 + 60 + 94') : v + ' = ' + r;
+      var v = cur.value, e = C.hasExpr(v), r = e ? C.evalExpr(v, places(cur)) : null;
+      $('cbLbl').textContent = label(cur);
+      $('cbRes').textContent = r !== null ? v + ' = ' + r : (e ? v + ' = ?' : (v || '+ − × ÷ se jodo, ghatao'));
       bar.classList.toggle('has', r !== null);
     }
     function settle(el) {
@@ -1688,10 +1712,24 @@ body.calc-on{padding-bottom:110px}
       var r = C.evalExpr(el.value, places(el));
       if (r !== null) { el.title = el.value + ' = ' + r; el.value = r; fire(el); }
     }
-    document.addEventListener('focusin', function (e) { if (isNumIn(e.target)) { cur = e.target; bar.classList.add('show'); document.body.classList.add('calc-on'); show(); } });
+    function open(el) {
+      cur = el; bar.classList.add('show'); document.body.classList.add('calc-on'); show();
+      if (touchPad) setTimeout(function () {
+        var rb = el.getBoundingClientRect(), top = window.innerHeight - bar.offsetHeight - 12;
+        if (rb.bottom > top) window.scrollBy({ top: rb.bottom - top, behavior: 'smooth' });
+      }, 30);
+    }
+    function close() { bar.classList.remove('show'); document.body.classList.remove('calc-on'); cur = null; }
+    function numInputs() { return Array.prototype.filter.call(document.querySelectorAll('input'), function (i) { return isNumIn(i) && i.offsetParent !== null && !i.disabled; }); }
+    function prep(el) { if (touchPad && isNumIn(el) && el.getAttribute('inputmode') !== 'none') { el.setAttribute('data-im', el.getAttribute('inputmode')); el.setAttribute('inputmode', 'none'); } }
+    if (touchPad) {
+      document.addEventListener('pointerdown', function (e) { if (e.target.tagName === 'INPUT') prep(e.target); }, true);
+      document.addEventListener('touchstart', function (e) { if (e.target.tagName === 'INPUT') prep(e.target); }, { capture: true, passive: true });
+    }
+    document.addEventListener('focusin', function (e) { if (isNumIn(e.target)) { prep(e.target); open(e.target); } });
     document.addEventListener('focusout', function (e) {
       if (e.target !== cur) return; var el = cur;
-      setTimeout(function () { if (document.activeElement !== el) { settle(el); if (!isNumIn(document.activeElement)) { bar.classList.remove('show'); document.body.classList.remove('calc-on'); cur = null; } } }, 0);
+      setTimeout(function () { if (document.activeElement !== el) { settle(el); if (!isNumIn(document.activeElement)) close(); } }, 0);
     });
     document.addEventListener('input', function (e) { if (e.target === cur) show(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && cur && e.target === cur && C.hasExpr(cur.value)) { e.preventDefault(); settle(cur); show(); } });
@@ -1699,10 +1737,19 @@ body.calc-on{padding-bottom:110px}
     bar.addEventListener('mousedown', function (e) { e.preventDefault(); });
     bar.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b || !cur) return;
-      var op = b.dataset.op, v = cur.value, st = cur.selectionStart == null ? v.length : cur.selectionStart, en = cur.selectionEnd == null ? v.length : cur.selectionEnd;
+      var op = b.dataset.op, v = cur.value, len = v.length,
+        st = cur.selectionStart == null ? len : cur.selectionStart, en = cur.selectionEnd == null ? len : cur.selectionEnd;
+      if (touchPad && document.activeElement !== cur) { st = en = len; }
       if (op === '=') { settle(cur); show(); cur.focus(); return; }
-      if (op === '⌫') { if (st === en && st > 0) st--; cur.value = v.slice(0, st) + v.slice(en); }
-      else { cur.value = v.slice(0, st) + op + v.slice(en); st++; }
+      if (op === 'done') { settle(cur); cur.blur(); close(); return; }
+      if (op === 'next') {
+        settle(cur); var list = numInputs(), i = list.indexOf(cur), nx = list[i + 1];
+        if (nx) { prep(nx); nx.focus(); try { nx.setSelectionRange(nx.value.length, nx.value.length); } catch (x) {} } else { cur.blur(); close(); }
+        return;
+      }
+      if (op === 'C') { cur.value = ''; st = 0; }
+      else if (op === '⌫') { if (st === en && st > 0) st--; cur.value = v.slice(0, st) + v.slice(en); }
+      else { cur.value = v.slice(0, st) + op + v.slice(en); st += op.length; }
       try { cur.setSelectionRange(st, st); } catch (x) {}
       fire(cur); cur.focus();
     });
