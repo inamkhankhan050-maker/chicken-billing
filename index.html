@@ -406,6 +406,18 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
 .s-out .due-r .val{color:#9A3412}
 @media (max-width:1100px){.s-out .sq{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:900px){.s-out .s2{grid-template-columns:1fr}.s-out .s2b{border-left:0;padding-left:0;border-top:1px solid var(--line);margin-top:8px}}
+
+/* + − × ÷ bar for number boxes */
+.calc-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.calc-bar.show{display:block}
+.cb-res{font-size:13px;color:var(--muted);text-align:right;padding:0 4px 5px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calc-bar.has .cb-res{color:var(--accent,#15803D);font-weight:700;font-size:15px}
+.cb-keys{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:520px;margin-left:auto}
+.cb-keys button{height:42px;border:1px solid var(--line);border-radius:8px;background:#F3F6F4;font-size:22px;font-weight:700;color:#14532D;cursor:pointer}
+.cb-keys .cb-eq{background:#15803D;color:#fff;border-color:#15803D}
+.cb-keys .cb-del{font-size:18px;color:#9A3412}
+@media print{.calc-bar{display:none!important}}
+body.calc-on{padding-bottom:110px}
 </style>
 </head>
 <body>
@@ -594,11 +606,53 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
   var ROUND_TO_PAISE = 1000;             // final must be a multiple of ₹10
   var MAX_ADJUSTMENT_PAISE = 999;        // ₹9.99
 
+  var OPS = /[+\-*\/x×÷−]/i;
+  /** Evaluate a simple sum like "50+60.5+94" or "20×4.5" exactly. Returns {n,d} (fraction) or null. */
+  function evalFrac(str) {
+    var s = String(str).replace(/[\s,]/g, '').replace(/−/g, '-').replace(/[x×]/gi, '*').replace(/÷/g, '/');
+    if (!s || !/^[\d.+\-*\/]+$/.test(s)) return null;
+    var i = 0;
+    function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a || 1; }
+    function mk(n, d) { if (d < 0) { n = -n; d = -d; } var g = gcd(n, d); return { n: n / g, d: d / g }; }
+    function num() {
+      var m = /^\d*\.?\d+|^\d+\.?/.exec(s.slice(i)); if (!m) return null;
+      i += m[0].length; var t = m[0].split('.'), f = t[1] || '';
+      return mk(parseInt((t[0] || '0') + f, 10), Math.pow(10, f.length));
+    }
+    function factor() { if (s[i] === '-') { i++; var f = factor(); return f && mk(-f.n, f.d); } return num(); }
+    function term() {
+      var a = factor(); if (!a) return null;
+      while (s[i] === '*' || s[i] === '/') {
+        var op = s[i++], b = factor(); if (!b) return null;
+        if (op === '*') a = mk(a.n * b.n, a.d * b.d); else { if (b.n === 0) return null; a = mk(a.n * b.d, a.d * b.n); }
+      }
+      return a;
+    }
+    var a = term(); if (!a) return null;
+    while (s[i] === '+' || s[i] === '-') {
+      var op = s[i++], b = term(); if (!b) return null;
+      a = mk(op === '+' ? a.n * b.d + b.n * a.d : a.n * b.d - b.n * a.d, a.d * b.d);
+    }
+    if (i !== s.length || !Number.isSafeInteger(a.n) || !Number.isSafeInteger(a.d)) return null;
+    return a;
+  }
+  /** Expression -> plain decimal string rounded half-up to `places` (trailing zeros trimmed), or null. */
+  function evalExpr(str, places) {
+    var f = evalFrac(str); if (!f) return null;
+    var sc = Math.pow(10, places == null ? 3 : places), neg = f.n < 0, n = Math.abs(f.n);
+    var v = Math.floor((n * sc * 2 + f.d) / (2 * f.d));
+    var w = Math.floor(v / sc), fr = String(v % sc); while (fr.length < String(sc).length - 1) fr = '0' + fr;
+    fr = fr.replace(/0+$/, '');
+    return (neg ? '-' : '') + w + (fr ? '.' + fr : '');
+  }
+  function hasExpr(s) { s = String(s == null ? '' : s).trim(); return OPS.test(s.replace(/^[-−]/, '')) ; }
+
   /** Parse a decimal string into an integer scaled by 10^places. Returns null if invalid. */
   function parseScaled(input, places) {
     if (input === null || input === undefined) return null;
     var s = String(input).trim().replace(/,/g, '');
     if (s === '') return null;
+    if (hasExpr(s)) { var e = evalExpr(s, places); if (e === null || e[0] === '-') return NaN; s = e; }
     if (!/^\d*\.?\d*$/.test(s) || s === '.') return NaN; // rejects negatives, letters
     var parts = s.split('.');
     var whole = parts[0] || '0';
@@ -614,6 +668,7 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
     var errors = {};
     var name = (row.name || '').trim();
     var piecesRaw = String(row.pieces == null ? '' : row.pieces).trim();
+    if (hasExpr(piecesRaw)) { var pe = evalExpr(piecesRaw, 3); piecesRaw = pe === null ? 'x' : pe; }
     var pieces = piecesRaw === '' ? null : (/^\d+$/.test(piecesRaw) ? parseInt(piecesRaw, 10) : NaN);
     var grams = parseScaled(row.kg, 3);
     var ratePaise = parseScaled(row.rate, 2);
@@ -773,7 +828,7 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
   }
 
   var api = {
-    parseScaled: parseScaled, validateRow: validateRow, calculate: calculate,
+    parseScaled: parseScaled, evalExpr: evalExpr, hasExpr: hasExpr, validateRow: validateRow, calculate: calculate,
     computeRow: computeRow, computeTotals: computeTotals, averageKg: averageKg, ledger: ledger,
     formatINR: formatINR, formatKg: formatKg, formatInt: formatInt, paiseToPlain: paiseToPlain,
     amountInWords: amountInWords, groupIndian: groupIndian
@@ -1608,9 +1663,51 @@ body.mode-exp #multiView,body.mode-exp .m-bar,body.mode-exp .single{display:none
     $('defaultJaal').value = state.defaultJaal;
     $('sheetNo').textContent = '#' + state.sheetNo;
     state.selectedId = state.rows[0] && state.rows[0].id;
-    bind(); renderAll(); initSingle();
+    bind(); renderAll(); initSingle(); initCalcBar();
     if (!saved && storage) { save(); toast('Sample bill loaded. Use Clear All to start a fresh bill.'); }
   }
+  /* ---- + − × ÷ calculator inside number boxes ---- */
+  function isNumIn(el) { return el && el.tagName === 'INPUT' && /^(decimal|numeric)$/.test(el.getAttribute('inputmode') || ''); }
+  function initCalcBar() {
+    var bar = document.createElement('div'); bar.id = 'calcBar'; bar.className = 'calc-bar';
+    bar.innerHTML = '<div class="cb-res" id="cbRes"></div><div class="cb-keys">' +
+      ['+', '−', '×', '÷'].map(function (o) { return '<button type="button" data-op="' + o + '">' + o + '</button>'; }).join('') +
+      '<button type="button" data-op="⌫" class="cb-del">⌫</button><button type="button" data-op="=" class="cb-eq">=</button></div>';
+    document.body.appendChild(bar);
+    var cur = null;
+    function places(el) { return el.getAttribute('inputmode') === 'numeric' ? 0 : (/rate|cash|online|old|amt|Rate|Cash|Online|Old/.test((el.id || '') + (el.dataset.f || '')) ? 2 : 3); }
+    function fire(el) { el.dispatchEvent(new Event('input', { bubbles: true })); }
+    function show() {
+      if (!cur) return;
+      var v = cur.value, r = C.hasExpr(v) ? C.evalExpr(v, places(cur)) : null;
+      $('cbRes').textContent = r === null ? (C.hasExpr(v) ? v + ' = ?' : 'Jodne ke liye + dabao: 50 + 60 + 94') : v + ' = ' + r;
+      bar.classList.toggle('has', r !== null);
+    }
+    function settle(el) {
+      if (!el || !C.hasExpr(el.value)) return;
+      var r = C.evalExpr(el.value, places(el));
+      if (r !== null) { el.title = el.value + ' = ' + r; el.value = r; fire(el); }
+    }
+    document.addEventListener('focusin', function (e) { if (isNumIn(e.target)) { cur = e.target; bar.classList.add('show'); document.body.classList.add('calc-on'); show(); } });
+    document.addEventListener('focusout', function (e) {
+      if (e.target !== cur) return; var el = cur;
+      setTimeout(function () { if (document.activeElement !== el) { settle(el); if (!isNumIn(document.activeElement)) { bar.classList.remove('show'); document.body.classList.remove('calc-on'); cur = null; } } }, 0);
+    });
+    document.addEventListener('input', function (e) { if (e.target === cur) show(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && cur && e.target === cur && C.hasExpr(cur.value)) { e.preventDefault(); settle(cur); show(); } });
+    bar.addEventListener('pointerdown', function (e) { e.preventDefault(); });
+    bar.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b || !cur) return;
+      var op = b.dataset.op, v = cur.value, st = cur.selectionStart == null ? v.length : cur.selectionStart, en = cur.selectionEnd == null ? v.length : cur.selectionEnd;
+      if (op === '=') { settle(cur); show(); cur.focus(); return; }
+      if (op === '⌫') { if (st === en && st > 0) st--; cur.value = v.slice(0, st) + v.slice(en); }
+      else { cur.value = v.slice(0, st) + op + v.slice(en); st++; }
+      try { cur.setSelectionRange(st, st); } catch (x) {}
+      fire(cur); cur.focus();
+    });
+  }
+  if (typeof window !== 'undefined') window.__calcBarReady = true;
   init();
 
   // Expose for automated testing only
