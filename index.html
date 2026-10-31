@@ -63,7 +63,7 @@ button,input{font-family:inherit;font-size:inherit;color:inherit}
 /* ---------- Sheet ---------- */
 .sheet{overflow:hidden;display:flex;flex-direction:column}
 .sheet-scroll{overflow:auto;max-height:calc(100vh - 330px);min-height:360px}
-.grid{--cols:34px minmax(128px,1.6fr) minmax(54px,.6fr) minmax(64px,.7fr) minmax(52px,.55fr) minmax(64px,.65fr) minmax(58px,.6fr) minmax(86px,.95fr) minmax(66px,.7fr) minmax(80px,.85fr) minmax(94px,1fr) minmax(76px,.8fr) minmax(72px,.75fr) minmax(72px,.75fr) minmax(92px,1fr) 34px;min-width:1150px}
+.grid{--cols:34px minmax(128px,1.6fr) minmax(54px,.6fr) minmax(64px,.7fr) minmax(52px,.55fr) minmax(64px,.65fr) minmax(58px,.6fr) minmax(86px,.95fr) minmax(66px,.7fr) minmax(80px,.85fr) minmax(94px,1fr) minmax(76px,.8fr) minmax(72px,.75fr) minmax(72px,.75fr) minmax(92px,1fr) 64px;min-width:1180px}
 .r{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--line-2);min-height:44px;align-items:stretch}
 .r > .c{display:flex;align-items:center;padding:0 6px;min-width:0}
 .body .r > .c{font-size:14px}
@@ -72,7 +72,7 @@ button,input{font-family:inherit;font-size:inherit;color:inherit}
 .c.name{position:sticky;left:34px;z-index:2;background:inherit}
 .c.auto{background:var(--auto-bg);justify-content:flex-end;color:var(--ink-2)}
 .c.fin{background:var(--green-bg);border-left:2px solid var(--green-line);justify-content:flex-end;color:var(--green);font-weight:700}
-.c.act{justify-content:center;padding:0}
+.c.act{justify-content:center;padding:0;gap:2px;display:flex;align-items:center}
 .c.inp{justify-content:flex-end}
 .body .r{background:#fff}
 .body .r:nth-child(even){background:#FCFDFE}
@@ -106,6 +106,8 @@ button,input{font-family:inherit;font-size:inherit;color:inherit}
 .lab-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.15}
 .lab-wrap .adj{order:2;font-size:11px;padding:0 4px}
 .adj{font-size:12px;color:var(--amber);background:var(--amber-bg);padding:0 5px;border-radius:4px}
+.wa1{width:28px;height:28px;border:0;background:transparent;border-radius:6px;color:#16A34A;cursor:pointer;display:grid;place-items:center;padding:0}
+.wa1:hover{background:#DCFCE7}
 .del{width:32px;height:32px;border:0;background:transparent;border-radius:6px;color:#9AA3AE;cursor:pointer;display:grid;place-items:center}
 .del:hover{background:#FEF2F2;color:var(--red)}
 .m-lbl{display:none}
@@ -196,7 +198,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .sheet-scroll{max-height:none;overflow:visible;min-height:0}
   .grid{min-width:0}
   .head,.foot{display:none}
-  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-areas:"idx name name name name name name fin fin fin fin act" "pcs pcs pcs kg kg kg jaal jaal jaal rate rate rate" "avg avg avg basic basic basic samiti samiti samiti labour labour labour" "old old old cash cash cash onl onl onl due due due" "meta meta meta meta meta meta meta meta meta meta meta meta";gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px;margin-bottom:8px;min-height:0;position:relative;align-items:center}
+  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-areas:"idx name name name name name fin fin fin fin act act" "pcs pcs pcs kg kg kg jaal jaal jaal rate rate rate" "avg avg avg basic basic basic samiti samiti samiti labour labour labour" "old old old cash cash cash onl onl onl due due due" "meta meta meta meta meta meta meta meta meta meta meta meta";gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px;margin-bottom:8px;min-height:0;position:relative;align-items:center}
   .body .r.sel{border-color:var(--green-line)}
   .r > .c{padding:0;background:transparent !important;border:0 !important;position:static;min-width:0}
   .c.idx{display:flex !important;grid-area:idx;width:28px;height:28px;border-radius:50%;background:var(--green) !important;color:#fff !important;font-size:13px;font-weight:700;justify-content:center;align-items:center;position:static}
@@ -205,7 +207,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .c.avg{grid-area:avg}.c.old{grid-area:old}.c.cash{grid-area:cash}.c.onl{grid-area:onl}.c.due{grid-area:due}.c.basic{grid-area:basic}.c.samiti{grid-area:samiti}.c.labour{grid-area:labour}
   .c.fin{grid-area:fin;justify-content:flex-end;font-size:18px;font-weight:800}
   .c.act{grid-area:act;justify-content:flex-end}
-  .c.act .del{width:36px;height:36px}
+  .c.act .del,.c.act .wa1{width:34px;height:34px}
   .c.inp{flex-direction:column;align-items:stretch}
   .c.due{display:flex !important;flex-direction:column;align-items:stretch;background:#FFF7ED !important;border-radius:8px;padding:5px 6px !important}
   .c.due .v{text-align:right;font-size:14px;font-weight:800;white-space:nowrap}
@@ -455,18 +457,18 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
   <section class="single" id="singleView" aria-label="Single customer calculator">
     <div class="card s-in">
       <h3>Single Customer Bill</h3>
-      <label class="fld"><span>Firm / Dukaan Name <em>(print par Ghazipur Murga Mandi ke niche)</em></span><input id="sFirm" autocomplete="off" placeholder="e.g. Haji Traders, Shop No. 12"></label>
-      <label class="fld"><span>Customer Name <em>(optional)</em></span><input id="sName" autocomplete="off" placeholder="e.g. Sharma Chicken Centre"></label>
+      <label class="fld"><span>Firm / Dukaan Name <em>(print par Ghazipur Murga Mandi ke niche)</em></span><input id="sFirm" autocomplete="off"></label>
+      <label class="fld"><span>Customer Name <em>(optional)</em></span><input id="sName" autocomplete="off"></label>
       <div class="fld3">
-        <label class="fld"><span>Pieces</span><input id="sPieces" class="n" inputmode="numeric" placeholder="0"></label>
-        <label class="fld"><span>Total KG</span><input id="sKgIn" class="n" inputmode="decimal" placeholder="0.000"></label>
-        <label class="fld"><span>Jaal KG <em>(minus)</em></span><input id="sJaal" class="n" inputmode="decimal" placeholder="0"></label>
-        <label class="fld"><span>Rate / KG (₹)</span><input id="sRate" class="n" inputmode="decimal" placeholder="90"></label>
+        <label class="fld"><span>Pieces</span><input id="sPieces" class="n" inputmode="numeric"></label>
+        <label class="fld"><span>Total KG</span><input id="sKgIn" class="n" inputmode="decimal"></label>
+        <label class="fld"><span>Jaal KG <em>(minus)</em></span><input id="sJaal" class="n" inputmode="decimal"></label>
+        <label class="fld"><span>Rate / KG (₹)</span><input id="sRate" class="n" inputmode="decimal"></label>
       </div>
       <div class="fld3 led">
-        <label class="fld"><span>Pichla Balance (B)</span><input id="sOld" class="n" inputmode="decimal" placeholder="0"></label>
-        <label class="fld"><span>Rec Cash</span><input id="sCash" class="n" inputmode="decimal" placeholder="0"></label>
-        <label class="fld"><span>Rec Online</span><input id="sOnline" class="n" inputmode="decimal" placeholder="0"></label>
+        <label class="fld"><span>Pichla Balance (B)</span><input id="sOld" class="n" inputmode="decimal"></label>
+        <label class="fld"><span>Rec Cash</span><input id="sCash" class="n" inputmode="decimal"></label>
+        <label class="fld"><span>Rec Online</span><input id="sOnline" class="n" inputmode="decimal"></label>
       </div>
       <p class="s-err" id="sErr"></p>
       <div class="s-acts"><button class="btn danger" id="sClear">Clear</button><button class="btn" id="sPrint">Print / Save PDF</button><button class="btn wa" id="sShare"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button><button class="btn primary" id="sToSheet">Add to Multiple Sheet</button></div>
@@ -500,7 +502,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr">Search customer</span><input id="search" type="search" placeholder="Search customer…" autocomplete="off"></label>
     <div class="pills">
       <span class="pill" title="Applies to every row; a rate you change in a row stays as you set it">Default rate ₹<input id="defaultRate" class="n" inputmode="decimal" aria-label="Default rate per kg, applies to all rows">/kg <small style="color:var(--faint)">· sab rows mein</small></span>
-      <span class="pill" title="Jaal (crate) weight is subtracted from Total KG in every row; a jaal you change in a row stays as you set it">Default jaal<input id="defaultJaal" class="n" inputmode="decimal" placeholder="0" aria-label="Default jaal weight in kg, applies to all rows">kg <small style="color:var(--faint)">· sab rows mein</small></span>
+      <span class="pill" title="Jaal (crate) weight is subtracted from Total KG in every row; a jaal you change in a row stays as you set it">Default jaal<input id="defaultJaal" class="n" inputmode="decimal" aria-label="Default jaal weight in kg, applies to all rows">kg <small style="color:var(--faint)">· sab rows mein</small></span>
       <span class="pill">Samiti <b>1%</b> (rounded down)</span>
       <span class="pill">Labour <b>₹0.625</b>/pc</span>
     </div>
@@ -867,7 +869,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
   var uid = function () { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
   var newRow = function (o) { o = o || {}; return { id: uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '', customRate: !!o.customRate, jaal: o.jaal != null ? String(o.jaal) : '', customJaal: !!o.customJaal, oldBal: o.oldBal != null ? String(o.oldBal) : '', cash: o.cash != null ? String(o.cash) : '', online: o.online != null ? String(o.online) : '' }; };
 
-  var state = { rows: [], defaultRate: '90', defaultJaal: '', sheetNo: 1, selectedId: null };
+  var state = { rows: [], defaultRate: '', defaultJaal: '', sheetNo: 1, selectedId: null };
 
   // ---------- Persistence (local only, never sent anywhere) ----------
   var storage = (function () {
@@ -893,9 +895,10 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 
   // ---------- Row DOM ----------
   var ICON_DEL = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+  var ICON_WA = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>';
   function rowHTML(row) {
     function inp(f, cls, ph, mode) {
-      return '<input class="cell-in ' + cls + '" data-f="' + f + '" inputmode="' + mode + '" autocomplete="off" placeholder="' + ph + '" aria-label="' + ph + '">';
+      return '<input class="cell-in ' + cls + '" data-f="' + f + '" inputmode="' + mode + '" autocomplete="off" aria-label="' + ph + '">';
     }
     return '' +
       '<div class="c idx"></div>' +
@@ -913,7 +916,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
       '<div class="c inp cash"><span class="m-lbl">Rec Cash</span>' + inp('cash', 'n', 'Cash', 'decimal') + '</div>' +
       '<div class="c inp onl"><span class="m-lbl">Rec Online</span>' + inp('online', 'n', 'Online', 'decimal') + '</div>' +
       '<div class="c due"><span class="m-lbl">Balance Baaki</span><span class="v" data-o="due"></span></div>' +
-      '<div class="c act"><button class="del" data-del title="Delete row" aria-label="Delete row">' + ICON_DEL + '</button></div>' +
+      '<div class="c act"><button class="wa1" data-wa title="Is customer ka bill WhatsApp par bhejo" aria-label="WhatsApp PDF">' + ICON_WA + '</button><button class="del" data-del title="Delete row" aria-label="Delete row">' + ICON_DEL + '</button></div>' +
       '<div class="m-meta" data-o="meta"></div>';
   }
   function buildRow(row) {
@@ -1201,6 +1204,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
       state.selectedId = r.dataset.id; renderPreview();
     });
     body.addEventListener('click', function (e) {
+      var w = e.target.closest('[data-wa]'); if (w) { shareRow(w.closest('.r').dataset.id); return; }
       var b = e.target.closest('[data-del]'); if (b) deleteRow(b.closest('.r').dataset.id);
     });
     body.addEventListener('keydown', function (e) {
@@ -1329,12 +1333,12 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
   }
 
   // ---------- Receipt as PDF (canvas image inside a one-page PDF, works offline) ----------
-  function receiptModel() {
-    var row = singleRow(), v = C.validateRow(row);
+  function receiptModel(src) {
+    var row = src || singleRow(), v = C.validateRow(row);
     if (!v.ok) return null;
     var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = C.ledger(row, r.final);
     var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
-    var m = { firm: $('sFirm').value.trim(), name: $('sName').value.trim() || 'Customer',
+    var m = { firm: $('sFirm').value.trim(), name: (src ? String(row.name || '') : $('sName').value).trim() || 'Customer',
       date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), boxes: [], rows: [], led: [], final: r.final };
     m.boxes.push(['PIECES', C.formatInt(v.pieces)], ['TOTAL KG', C.formatKg(v.grams)]);
     if (v.jaalGrams) m.boxes.push(['JAAL KG', '− ' + C.formatKg(v.jaalGrams)], ['NET KG', C.formatKg(v.netGrams)]);
@@ -1421,6 +1425,14 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     sharePdf(blob, fname, msg);
   }
 
+  function shareRow(id) {
+    var row = null; state.rows.forEach(function (r) { if (r.id === id) row = r; });
+    var m = row && receiptModel(row);
+    if (!m) { toast('Is row mein pieces, KG aur rate sahi bhariye'); return; }
+    var cv = receiptCanvas(m), blob = jpegPdf(cv.toDataURL('image/jpeg', 0.92), cv.width, cv.height);
+    var fname = ('Bill ' + m.name + ' ' + m.date).replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-') + '.pdf';
+    sharePdf(blob, fname, 'Bill · ' + m.name + ' · ' + m.date);
+  }
   function sharePdf(blob, fname, msg) {
     var file = null; try { file = new File([blob], fname, { type: 'application/pdf' }); } catch (e) {}
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1495,7 +1507,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     var sp = multiSpec(); if (!sp) { toast('Pehle kam se kam ek customer ka bill bhariye'); return; }
     sharePdf(canvasPdf(tableCanvas(sp)), 'Bill-Sheet-' + fileStamp() + '.pdf', 'Bill · ' + sp.date);
   }
-  window.__cbReceipt = { model: receiptModel, pdf: jpegPdf, multiSpec: multiSpec, expSpec: function () { return expSpec(); } };
+  window.__cbReceipt = { shareRow: shareRow, model: receiptModel, pdf: jpegPdf, multiSpec: multiSpec, expSpec: function () { return expSpec(); } };
   function saveSingle() {
     if (!storage) return;
     try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate, jaal: $('sJaal').value, customJaal: singleCustomJaal, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value })); } catch (e) {}
@@ -1584,7 +1596,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
       r.innerHTML = '<div class="ix">' + (i + 1) + '</div>' +
         '<select class="e-type" data-f="type" aria-label="Kharcha type">' + types.map(function (k) { return '<option' + (k === it.type ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select>' +
         '<input class="e-note" data-f="note" placeholder="' + (it.type === 'Truck / Gaadi Bhada' ? 'Truck no. / firm' : it.type === 'Labour' ? 'Labour ka naam' : 'Detail') + '" value="' + esc(it.note || '') + '" autocomplete="off">' +
-        '<input class="n e-amt" data-f="amt" inputmode="decimal" placeholder="0" value="' + esc(it.amt || '') + '" aria-label="Amount">' +
+        '<input class="n e-amt" data-f="amt" inputmode="decimal" value="' + esc(it.amt || '') + '" aria-label="Amount">' +
         '<select class="e-mode" data-f="mode" aria-label="Paid by"><option' + (it.mode !== 'Online' ? ' selected' : '') + '>Cash</option><option' + (it.mode === 'Online' ? ' selected' : '') + '>Online</option></select>' +
         '<button class="btn icon e-del" aria-label="Delete" title="Delete">✕</button>';
       b.appendChild(r);
@@ -1667,12 +1679,21 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     var saved = load();
     if (saved) {
       state.rows = saved.rows.map(function (r) { return newRow(r); });
-      state.defaultRate = saved.defaultRate || '90';
+      state.defaultRate = saved.defaultRate || '';
+      var mig = false; try { mig = storage && !storage.getItem('chickenBilling.blankV2'); if (mig) storage.setItem('chickenBilling.blankV2', '1'); } catch (e) {}
+      if (mig && state.defaultRate === '90') {
+        state.defaultRate = '';
+        state.rows.forEach(function (r) { if (!r.customRate && r.rate === '90' && !String(r.name || '').trim() && !String(r.pieces || '').trim() && !String(r.kg || '').trim()) r.rate = ''; });
+      }
       state.defaultJaal = saved.defaultJaal || '';
       state.sheetNo = saved.sheetNo || 1;
     } else {
-      state.rows = SAMPLE.map(function (s) { return newRow({ name: s[0], pieces: s[1], kg: s[2], rate: s[3] }); });
-      state.rows.push(newRow({ rate: '90' }), newRow({ rate: '90' }));
+      try { storage && storage.setItem('chickenBilling.blankV2', '1'); } catch (e) {}
+      if (/[?&]demo\b/.test(location.search)) {
+        state.defaultRate = '90';
+        state.rows = SAMPLE.map(function (s) { return newRow({ name: s[0], pieces: s[1], kg: s[2], rate: s[3] }); });
+        state.rows.push(newRow({ rate: '90' }), newRow({ rate: '90' }));
+      } else for (var bi = 0; bi < 5; bi++) state.rows.push(newRow({ rate: '' }));
     }
     if (!storage) { $('storageNotice').classList.add('show'); $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved (preview)'; }
     $('defaultRate').value = state.defaultRate;
