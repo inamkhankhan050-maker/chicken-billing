@@ -504,7 +504,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
       <span class="pill" title="Applies to every row; a rate you change in a row stays as you set it">Default rate ₹<input id="defaultRate" class="n" inputmode="decimal" aria-label="Default rate per kg, applies to all rows">/kg <small style="color:var(--faint)">· sab rows mein</small></span>
       <span class="pill" title="Jaal (crate) weight is subtracted from Total KG in every row; a jaal you change in a row stays as you set it">Default jaal<input id="defaultJaal" class="n" inputmode="decimal" aria-label="Default jaal weight in kg, applies to all rows">kg <small style="color:var(--faint)">· sab rows mein</small></span>
       <span class="pill">Samiti <b>1%</b> (rounded down)</span>
-      <span class="pill">Labour <b>₹0.625</b>/pc</span>
+      <span class="pill" title="Average 2.50 kg se kam: pcs ÷ 9 × ₹5 · 2.50–2.99: ÷ 8 × ₹5 · 3 kg+: ÷ 7 × ₹5">Labour <b>÷9 / ÷8 / ÷7 × ₹5</b> avg se</span>
     </div>
     <div class="tb-sp"></div>
     <button class="btn primary" id="btnAdd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Customer</button>
@@ -711,8 +711,10 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     // Samiti = FLOOR(basic × 1%) to the whole rupee.
     var samiti = Math.floor(basic * SAMITI_PERCENT / 100 / 100) * 100;
 
-    // Original labour = pieces × ₹0.625, kept to paise (half-up).
-    var labourOriginal = Math.floor((pieces * LABOUR_PAISE_X10_PER_PIECE + 5) / 10);
+    // Labour slab by average bird size (net kg ÷ pieces, 2 decimals half-up), user rule Oct 31 2026:
+    //   avg < 2.50 kg -> pieces ÷ 9 × ₹5;  2.50–2.99 -> ÷ 8 × ₹5;  3.00 and above -> ÷ 7 × ₹5.  Kept to paise (half-up).
+    var divisor = labourDivisor(grams, pieces);
+    var labourOriginal = Math.floor((pieces * 500 * 2 + divisor) / (2 * divisor));
 
     var beforeAdj = basic + samiti + labourOriginal;
     var adjustment = (ROUND_TO_PAISE - (beforeAdj % ROUND_TO_PAISE)) % ROUND_TO_PAISE;
@@ -729,6 +731,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
       basic: basic,
       samiti: samiti,
       labourOriginal: labourOriginal,
+      labourDivisor: divisor,
       beforeAdjustment: beforeAdj,
       adjustment: adjustment,
       labourAdjusted: labourAdjusted,
@@ -766,6 +769,11 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     return t;
   }
 
+  function labourDivisor(grams, pieces) {
+    var hund = pieces > 0 ? Math.floor((grams * 100 + pieces * 500) / (pieces * 1000)) : 0;
+    return hund < 250 ? 9 : hund < 300 ? 8 : 7;
+  }
+  function labourRuleText(pieces, divisor) { return groupIndian(String(pieces)) + ' ÷ ' + divisor + ' × ₹5'; }
   /** Average bird size: kg per piece, 2 decimals (half-up). null when not computable. */
   function averageKg(grams, pieces) {
     if (!(pieces > 0) || !(grams > 0)) return null;
@@ -841,7 +849,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 
   var api = {
     parseScaled: parseScaled, evalExpr: evalExpr, hasExpr: hasExpr, validateRow: validateRow, calculate: calculate,
-    computeRow: computeRow, computeTotals: computeTotals, averageKg: averageKg, ledger: ledger,
+    computeRow: computeRow, computeTotals: computeTotals, averageKg: averageKg, ledger: ledger, labourDivisor: labourDivisor, labourRuleText: labourRuleText,
     formatINR: formatINR, formatKg: formatKg, formatInt: formatInt, paiseToPlain: paiseToPlain,
     amountInWords: amountInWords, groupIndian: groupIndian
   };
@@ -1047,7 +1055,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     h += rc('Pieces', C.formatInt(c.pieces)) + rc('Total Weight', gkg + ' kg') + (c.jaalGrams ? rc('Jaal Weight', '− ' + C.formatKg(c.jaalGrams) + ' kg') + rc('Net Weight<small>' + gkg + ' − ' + C.formatKg(c.jaalGrams) + '</small>', kg + ' kg') : '') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(c.pieces) + ' pcs</small>', C.averageKg(c.netGrams, c.pieces) + ' kg / pc') + rc('Rate', rate + ' / kg') +
       rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
-      rc('Original Labour<small>' + C.formatInt(c.pieces) + ' × ₹0.625</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
+      rc('Original Labour<small>' + C.labourRuleText(c.pieces, r.labourDivisor) + '</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
       rc('Labour Adjustment<span class="badge">Round to ₹10</span>', '+ ' + C.formatINR(r.adjustment, { decimals: 2 })) +
       rc('Adjusted Labour', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
       '<div class="rc big"><span class="k">Final Amount</span><span class="val">' + (r.final == null ? '—' : C.formatINR(r.final)) + '</span></div>' +
@@ -1287,7 +1295,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     h += '<div class="s2' + (led ? '' : ' one') + '"><div class="s2a">' +
       rc('Basic Amount<small>' + kg + ' kg × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1%, rounded down</small>', C.formatINR(r.samiti)) +
-      rc('Labour Charge<small>' + C.formatInt(v.pieces) + ' × ₹0.625 = ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ' + ' + C.formatINR(r.adjustment, { decimals: 2 }) + ' round-off</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
+      rc('Labour Charge<small>' + C.labourRuleText(v.pieces, r.labourDivisor) + ' = ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ' + ' + C.formatINR(r.adjustment, { decimals: 2 }) + ' round-off</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
       '<div class="rc big"><span class="k">Aaj ka Bill</span><span class="val" id="sFinal">' + (r.final == null ? '—' : C.formatINR(r.final)) + '</span></div>' +
       (r.final != null ? '<div class="words">' + esc(C.amountInWords(r.final)) + '</div>' : '') +
       (r.warning ? '<div class="warn">' + esc(r.warning) + '</div>' : '') +
@@ -1314,7 +1322,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
       '<table class="rt">' +
         t('Basic Amount <small>' + C.formatKg(v.netGrams) + ' kg × ' + C.formatINR(v.ratePaise) + '</small>', C.formatINR(r.basic)) +
         t('Samiti <small>1%</small>', C.formatINR(r.samiti)) +
-        t('Labour <small>' + C.formatInt(v.pieces) + ' × ₹0.625 + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }) + '</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
+        t('Labour <small>' + C.labourRuleText(v.pieces, r.labourDivisor) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }) + '</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
         t('Aaj ka Bill', r.final == null ? '—' : C.formatINR(r.final), 'tot') +
       '</table>';
     if (L.any && L.ok) {
@@ -1345,7 +1353,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
     m.boxes.push(['AVERAGE', C.averageKg(v.netGrams, v.pieces) + ' kg'], ['RATE / KG', C.formatINR(v.ratePaise)]);
     m.rows.push(['Basic Amount', C.formatKg(v.netGrams) + ' kg × ' + C.formatINR(v.ratePaise), C.formatINR(r.basic)]);
     m.rows.push(['Samiti', '1%', C.formatINR(r.samiti)]);
-    m.rows.push(['Labour', C.formatInt(v.pieces) + ' × ₹0.625 + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }), C.formatINR(r.labourAdjusted, { decimals: 2 })]);
+    m.rows.push(['Labour', C.labourRuleText(v.pieces, r.labourDivisor) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }), C.formatINR(r.labourAdjusted, { decimals: 2 })]);
     m.billText = r.final == null ? '—' : C.formatINR(r.final);
     if (L.any && L.ok) {
       m.led = [['Pichla Balance (B)', '+ ' + m2(L.oldBal)], ['Total Due', m2(L.due + L.received), 1], ['Rec Cash', '− ' + m2(L.cash)], ['Rec Online', '− ' + m2(L.online)]];
