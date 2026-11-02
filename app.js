@@ -418,6 +418,17 @@
   var singleCustomRate = false, singleCustomJaal = false;
   var sF = { name: 'sName', pieces: 'sPieces', kg: 'sKgIn', jaal: 'sJaal', rate: 'sRate', oldBal: 'sOld', cash: 'sCash', online: 'sOnline' };
   function singleRow() { return { name: $('sName').value || 'x', pieces: $('sPieces').value, kg: $('sKgIn').value, jaal: $('sJaal').value, rate: $('sRate').value, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value }; }
+  // Manual labour (user asked Nov 2 2026): typed value replaces auto labour as the final labour charge, no round-off.
+  var singleLabourManual = false;
+  function singleLabour() { if (!singleLabourManual) return null; var s = ($('sLabour').value || '').trim(); if (s === '') return null; var v = C.parseScaled(s, 2); return v === null || isNaN(v) ? NaN : v; }
+  function calcSingle(v) {
+    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), m = singleLabour();
+    if (m === null || isNaN(m)) return r;
+    var o = {}; Object.keys(r).forEach(function (k) { o[k] = r[k]; });
+    o.manual = true; o.labourAdjusted = m; o.adjustment = 0; o.warning = null; o.final = o.basic + o.samiti + m;
+    return o;
+  }
+  function labNote(v, r) { return r.manual ? 'manual (auto ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ')' : C.labourRuleText(v.pieces, r.labourDivisor) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }); }
   function renderSingle() {
     var row = singleRow(), v = C.validateRow(row), out = $('sOut');
     ['pieces', 'kg', 'jaal', 'rate'].forEach(function (f) { $(sF[f]).classList.toggle('err', !!v.errors[f]); });
@@ -426,8 +437,11 @@
     $('sErr').textContent = Object.values(v.errors).concat(Object.values(sl.errors)).join(' · ');
     var nm = $('sName').value.trim();
     var h = '<h3>Bill' + (nm ? ' · ' + esc(nm) : '') + '</h3>';
-    if (!v.ok) { out.innerHTML = h + '<p class="empty">Pieces, total KG and rate bharte hi bill yahan dikhega.</p>'; return; }
-    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise);
+    if (!v.ok) { if (!singleLabourManual && document.activeElement !== $('sLabour')) $('sLabour').value = ''; out.innerHTML = h + '<p class="empty">Pieces, total KG and rate bharte hi bill yahan dikhega.</p>'; return; }
+    var lm = singleLabour(); $('sLabour').classList.toggle('err', isNaN(lm));
+    if (isNaN(lm)) $('sErr').textContent = ($('sErr').textContent ? $('sErr').textContent + ' · ' : '') + 'Labour sahi bhariye';
+    var r = calcSingle(v);
+    if (!singleLabourManual && document.activeElement !== $('sLabour')) $('sLabour').value = (r.labourAdjusted / 100).toFixed(2);
     var gkg = C.formatKg(v.grams), kg = C.formatKg(v.netGrams), rate = C.formatINR(v.ratePaise);
     var q = function (k, val) { return '<div><span>' + k + '</span><b>' + val + '</b></div>'; };
     h += '<div class="sq">' + q('Pieces', C.formatInt(v.pieces)) + q('Total KG', gkg) + (v.jaalGrams ? q('Jaal', '− ' + C.formatKg(v.jaalGrams)) + q('Net KG', kg) : '') +
@@ -436,8 +450,8 @@
     h += '<div class="s2' + (led ? '' : ' one') + '"><div class="s2a">' +
       rc('Basic Amount<small>' + kg + ' kg × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1%, rounded down</small>', C.formatINR(r.samiti)) +
-      rc('Labour Charge<small>' + C.labourRuleText(v.pieces, r.labourDivisor) + ' = ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ' + ' + C.formatINR(r.adjustment, { decimals: 2 }) + ' round-off</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
-      '<div class="rc big"><span class="k">Aaj ka Bill</span><span class="val" id="sFinal">' + (r.final == null ? '—' : C.formatINR(r.final)) + '</span></div>' +
+      rc('Labour Charge<small>' + (r.manual ? labNote(v, r) : C.labourRuleText(v.pieces, r.labourDivisor) + ' = ' + C.formatINR(r.labourOriginal, { decimals: 2 }) + ' + ' + C.formatINR(r.adjustment, { decimals: 2 }) + ' round-off') + '</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
+      '<div class="rc big"><span class="k">Aaj ka Bill</span><span class="val" id="sFinal">' + (r.final == null ? '—' : C.formatINR(r.final, { decimals: r.final % 100 ? 2 : 0 })) + '</span></div>' +
       (r.final != null ? '<div class="words">' + esc(C.amountInWords(r.final)) + '</div>' : '') +
       (r.warning ? '<div class="warn">' + esc(r.warning) + '</div>' : '') +
       '</div>' + (led ? '<div class="s2b">' + led + '</div>' : '') + '</div>';
@@ -446,7 +460,7 @@
   function buildReceipt() {
     var row = singleRow(), v = C.validateRow(row);
     if (!v.ok) return false;
-    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = C.ledger(row, r.final);
+    var r = calcSingle(v), L = C.ledger(row, r.final);
     var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
     var nm = $('sName').value.trim(), firm = $('sFirm').value.trim();
     var d = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -463,8 +477,8 @@
       '<table class="rt">' +
         t('Basic Amount <small>' + C.formatKg(v.netGrams) + ' kg × ' + C.formatINR(v.ratePaise) + '</small>', C.formatINR(r.basic)) +
         t('Samiti <small>1%</small>', C.formatINR(r.samiti)) +
-        t('Labour <small>' + C.labourRuleText(v.pieces, r.labourDivisor) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }) + '</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
-        t('Aaj ka Bill', r.final == null ? '—' : C.formatINR(r.final), 'tot') +
+        t('Labour <small>' + labNote(v, r) + '</small>', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
+        t('Aaj ka Bill', r.final == null ? '—' : C.formatINR(r.final, { decimals: r.final % 100 ? 2 : 0 }), 'tot') +
       '</table>';
     if (L.any && L.ok) {
       h += '<table class="rt led">' +
@@ -485,7 +499,7 @@
   function receiptModel(src) {
     var row = src || singleRow(), v = C.validateRow(row);
     if (!v.ok) return null;
-    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = C.ledger(row, r.final);
+    var r = src ? C.calculate(v.pieces, v.netGrams, v.ratePaise) : calcSingle(v), L = C.ledger(row, r.final);
     var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
     var m = { firm: $('sFirm').value.trim(), name: (src ? String(row.name || '') : $('sName').value).trim() || 'Customer',
       date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), boxes: [], rows: [], led: [], final: r.final };
@@ -494,8 +508,8 @@
     m.boxes.push(['AVERAGE', C.averageKg(v.netGrams, v.pieces) + ' kg'], ['RATE / KG', C.formatINR(v.ratePaise)]);
     m.rows.push(['Basic Amount', C.formatKg(v.netGrams) + ' kg × ' + C.formatINR(v.ratePaise), C.formatINR(r.basic)]);
     m.rows.push(['Samiti', '1%', C.formatINR(r.samiti)]);
-    m.rows.push(['Labour', C.labourRuleText(v.pieces, r.labourDivisor) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }), C.formatINR(r.labourAdjusted, { decimals: 2 })]);
-    m.billText = r.final == null ? '—' : C.formatINR(r.final);
+    m.rows.push(['Labour', labNote(v, r), C.formatINR(r.labourAdjusted, { decimals: 2 })]);
+    m.billText = r.final == null ? '—' : C.formatINR(r.final, { decimals: r.final % 100 ? 2 : 0 });
     if (L.any && L.ok) {
       m.led = [['Pichla Balance (B)', '+ ' + m2(L.oldBal)], ['Total Due', m2(L.due + L.received), 1], ['Rec Cash', '− ' + m2(L.cash)], ['Rec Online', '− ' + m2(L.online)]];
       m.balText = dueText(L.due); m.balPaise = L.due;
@@ -672,7 +686,7 @@
   window.__cbReceipt = { shareCanvas: shareCanvas, shareRow: shareRow, model: receiptModel, pdf: jpegPdf, multiSpec: multiSpec, expSpec: function () { return expSpec(); } };
   function saveSingle() {
     if (!storage) return;
-    try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate, jaal: $('sJaal').value, customJaal: singleCustomJaal, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value })); } catch (e) {}
+    try { storage.setItem(SINGLE_KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, rate: $('sRate').value, customRate: singleCustomRate, jaal: $('sJaal').value, customJaal: singleCustomJaal, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value, labour: singleLabourManual ? $('sLabour').value : '' })); } catch (e) {}
   }
   function setMode(m) {
     if (m !== 'single' && m !== 'exp') m = 'multi';
@@ -689,9 +703,11 @@
     singleCustomRate = !!(s && s.customRate);
     singleCustomJaal = !!(s && s.customJaal);
     $('sJaal').value = s && s.jaal != null ? s.jaal : state.defaultJaal;
-    $('sOld').value = s ? s.oldBal || '' : ''; $('sCash').value = s ? s.cash || '' : ''; $('sOnline').value = s ? s.online || '' : '';
+    $('sLabour').value = s ? s.labour || '' : ''; singleLabourManual = !!(s && s.labour); $('sOld').value = s ? s.oldBal || '' : ''; $('sCash').value = s ? s.cash || '' : ''; $('sOnline').value = s ? s.online || '' : '';
+    $('sLabour').addEventListener('input', function () { singleLabourManual = $('sLabour').value.trim() !== ''; renderSingle(); saveSingle(); });
+    $('sLabour').addEventListener('blur', function () { if (!singleLabourManual) renderSingle(); });
     Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { if (f === 'rate') singleCustomRate = $('sRate').value.trim() !== state.defaultRate; if (f === 'jaal') singleCustomJaal = $('sJaal').value.trim() !== state.defaultJaal; renderSingle(); saveSingle(); }); });
-    $('sClear').onclick = function () { $('sName').value = ''; $('sPieces').value = ''; $('sKgIn').value = ''; $('sRate').value = state.defaultRate; singleCustomRate = false; $('sJaal').value = state.defaultJaal; singleCustomJaal = false; $('sOld').value = ''; $('sCash').value = ''; $('sOnline').value = ''; renderSingle(); saveSingle(); $('sPieces').focus(); };
+    $('sClear').onclick = function () { $('sName').value = ''; $('sPieces').value = ''; $('sKgIn').value = ''; $('sRate').value = state.defaultRate; singleCustomRate = false; $('sJaal').value = state.defaultJaal; singleCustomJaal = false; $('sOld').value = ''; $('sCash').value = ''; $('sOnline').value = ''; $('sLabour').value = ''; singleLabourManual = false; renderSingle(); saveSingle(); $('sPieces').focus(); };
     $('sPrint').onclick = function () {
       if (!buildReceipt()) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
       var st = document.createElement('style'); st.id = 'pgSingle';
